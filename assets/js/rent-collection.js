@@ -3517,7 +3517,15 @@ async function importStateFile(event) {
   try {
     const text = await file.text();
     const parsed = JSON.parse(text);
+    const currentToken = state?.profile?.githubToken;
+    const currentGistId = state?.profile?.githubGistId;
+    
     state = normalizeState(parsed.state || parsed);
+    
+    // Preserve cloud sync credentials so they don't get overwritten by old backups
+    if (currentToken) state.profile.githubToken = currentToken;
+    if (currentGistId) state.profile.githubGistId = currentGistId;
+
     ensureProfileAccessKeys();
     receiptLogoPdfPromise = null;
     ensureSelectedTenant();
