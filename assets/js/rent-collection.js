@@ -4844,7 +4844,13 @@ async function readFromDb(key) {
           if (gist.files && gist.files[filename]) {
             const cloudData = JSON.parse(gist.files[filename].content);
             if (!localValue || !localValue._timestamp || (cloudData._timestamp && cloudData._timestamp > localValue._timestamp)) {
+              const localToken = localValue?.profile?.githubToken;
+              const localGistId = localValue?.profile?.githubGistId;
               localValue = cloudData.value;
+              if (localValue && localValue.profile) {
+                if (localToken) localValue.profile.githubToken = localToken;
+                if (localGistId) localValue.profile.githubGistId = localGistId;
+              }
               await writeToLocalDb(key, localValue);
             }
           } else if (localValue) {
@@ -4853,6 +4859,13 @@ async function readFromDb(key) {
               localValue._timestamp = Date.now();
               await writeToLocalDb(key, localValue);
             }
+            // Strip secrets from cloud data to avoid GitHub Secret Scanner revoking tokens!
+            let safeState = JSON.parse(JSON.stringify(localValue));
+            if (safeState && safeState.profile) {
+              delete safeState.profile.githubToken;
+              delete safeState.profile.githubGistId;
+            }
+
             await fetch(`https://api.github.com/gists/${config.gistId}`, {
               method: "PATCH",
               headers: {
@@ -4864,7 +4877,7 @@ async function readFromDb(key) {
                 files: {
                   [filename]: {
                     content: JSON.stringify({
-                      value: localValue,
+                      value: safeState,
                       _timestamp: localValue && localValue._timestamp ? localValue._timestamp : Date.now()
                     })
                   }
@@ -4895,6 +4908,12 @@ async function writeToDb(key, value) {
   if (config) {
     try {
       const filename = `${key}.json`;
+      let safeState = JSON.parse(JSON.stringify(value));
+      if (safeState && safeState.profile) {
+        delete safeState.profile.githubToken;
+        delete safeState.profile.githubGistId;
+      }
+
       await fetch(`https://api.github.com/gists/${config.gistId}`, {
         method: "PATCH",
         headers: {
@@ -4906,7 +4925,7 @@ async function writeToDb(key, value) {
           files: {
             [filename]: {
               content: JSON.stringify({
-                value: value,
+                value: safeState,
                 _timestamp: Date.now()
               })
             }
