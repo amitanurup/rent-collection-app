@@ -109,10 +109,12 @@ function checkSyncHash() {
       if (token && gist) {
         state.profile.githubToken = token;
         state.profile.githubGistId = gist;
-        saveState();
-        showToast("App permanently connected to cloud database!");
-        // Remove the sensitive info from the URL without reloading
+        // Save token locally first without pushing to cloud
+        writeToLocalDb(DB_KEY, state);
+        showToast("App permanently connected! Fetching data...");
         window.history.replaceState(null, null, window.location.pathname);
+        // Force a fetch from the newly connected cloud
+        setTimeout(() => location.reload(), 1500);
       }
     } catch (e) {
       console.error(e);
@@ -2220,6 +2222,9 @@ async function handleProfileSave(event) {
   const appPin = elements.profileAppPin ? elements.profileAppPin.value.trim() : "";
   const githubToken = elements.profileGithubToken ? elements.profileGithubToken.value.trim() : "";
   const githubGistId = elements.profileGithubGistId ? elements.profileGithubGistId.value.trim() : "";
+  const tokenChanged = cleanString(githubToken) !== state.profile.githubToken;
+  const gistChanged = cleanString(githubGistId) !== state.profile.githubGistId;
+
   state.profile = {
     ownerName: cleanString(elements.profileOwnerName.value),
     propertyName: cleanString(elements.profilePropertyName.value),
@@ -2249,6 +2254,13 @@ async function handleProfileSave(event) {
       dueDay: tenant.dueDay || state.profile.defaultDueDay
     })
   );
+
+  if (tokenChanged || gistChanged) {
+    await writeToLocalDb(DB_KEY, state);
+    showToast("Sync setup saved. Fetching data...");
+    setTimeout(() => location.reload(), 1500);
+    return;
+  }
 
   await persistState();
   renderAll();
