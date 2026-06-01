@@ -4831,7 +4831,7 @@ async function readFromDb(key) {
           const filename = `${key}.json`;
           if (gist.files && gist.files[filename]) {
             const cloudData = JSON.parse(gist.files[filename].content);
-            if (!localValue || (cloudData._timestamp && localValue._timestamp && cloudData._timestamp > localValue._timestamp)) {
+            if (!localValue || !localValue._timestamp || (cloudData._timestamp && cloudData._timestamp > localValue._timestamp)) {
               localValue = cloudData.value;
               await writeToLocalDb(key, localValue);
             }
