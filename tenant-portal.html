@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Krishna Residency Tenant Portal</title>
+    <meta
+      name="description"
+      content="Private tenant rent portal for Krishna Residency. View your room bill and pay using UPI."
+    />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/rent-collection-icon.svg" />
+    <link rel="stylesheet" href="assets/css/tenant-public.css?v=20260525-intake-backend-fix-8" />
+    <script src="assets/js/tenant-public.js?v=20260525-intake-backend-fix-8" defer></script>
+  </head>
+  <body class="tenant-public-body" data-page="portal">
+    <main class="public-shell">
+      <section class="public-hero">
+        <div class="public-brand">
+          <img
+            class="brand-mark public-brand-logo"
+            id="publicBrandLogo"
+            src="assets/branding/krishna-residency-logo.png"
+            alt="Krishna Residency logo"
+          />
+          <div>
+            <p class="brand-label" id="publicBrandName">Krishna Residency</p>
+            <h1>Private Rent Portal</h1>
+          </div>
+        </div>
+        <p id="publicHeroNote">Enter your mobile number to view only your room bill, receipt status, and payment options.</p>
+      </section>
+
+      <section class="public-card public-status-card" id="publicStatusCard">
+        <p id="publicStatusMessage">Preparing your private room link...</p>
+      </section>
+
+      <section class="public-card" id="unlockCard" hidden>
+        <div class="card-head">
+          <div>
+            <span class="public-kicker">Mobile unlock</span>
+            <h2>Verify your number</h2>
+          </div>
+        </div>
+        <p class="public-copy">
+          Only the tenant mobile number saved by the owner can open this room record. No other room data is shown here.
+        </p>
+
+        <form id="unlockForm" class="public-form">
+          <label class="public-field">
+            <span>Mobile Number</span>
+            <input id="unlockMobileInput" type="tel" inputmode="numeric" placeholder="Enter your mobile number" required />
+          </label>
+          <button class="public-button" type="submit">Open My Rent Record</button>
+        </form>
+        <p class="public-error" id="unlockError" hidden></p>
+      </section>
+
+      <section class="public-card" id="portalCard" hidden>
+        <div class="card-head">
+          <div>
+            <span class="public-kicker" id="portalMonthValue">Billing Month</span>
+            <h2 id="portalRoomTitle">Room record</h2>
+            <p class="public-copy" id="portalIntroCopy">This private link shows only your room details.</p>
+          </div>
+          <span class="public-badge" id="portalStatusBadge">Due</span>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card">
+            <span>Balance Due</span>
+            <strong id="portalDueValue">Rs 0</strong>
+          </article>
+          <article class="metric-card">
+            <span>Total Bill</span>
+            <strong id="portalTotalValue">Rs 0</strong>
+          </article>
+          <article class="metric-card">
+            <span>Paid</span>
+            <strong id="portalPaidValue">Rs 0</strong>
+          </article>
+        </div>
+
+        <div class="info-grid">
+          <article class="info-card">
+            <span>Room</span>
+            <strong id="portalRoomValue">-</strong>
+          </article>
+          <article class="info-card">
+            <span>Move-in Date</span>
+            <strong id="portalStartDateValue">-</strong>
+          </article>
+          <article class="info-card">
+            <span>Due Day</span>
+            <strong id="portalDueDayValue">-</strong>
+          </article>
+          <article class="info-card">
+            <span>Payment Mode</span>
+            <strong id="portalModeValue">Pending</strong>
+          </article>
+        </div>
+
+        <section class="public-subsection">
+          <div class="subsection-head">
+            <h3>Bill Breakdown</h3>
+            <p id="portalMeterCopy">Line items for this month</p>
+          </div>
+          <div class="breakdown-list" id="portalBreakdownList"></div>
+        </section>
+
+        <section class="public-subsection payment-box">
+          <div class="payment-box-copy">
+            <div>
+              <h3>Pay by UPI</h3>
+              <p id="portalPaymentNote">UPI payment and QR will appear here when the owner enables it.</p>
+            </div>
+            <div class="public-chip" id="portalUpiId">UPI not set</div>
+          </div>
+
+          <div class="payment-box-grid">
+            <div class="qr-frame">
+              <img id="portalQrImage" alt="UPI QR code" hidden />
+              <div class="qr-empty" id="portalQrEmpty">QR will appear here</div>
+            </div>
+
+            <div class="payment-actions">
+              <button class="public-button" id="portalPayNowBtn" type="button">Pay Now</button>
+              <button class="public-button public-button-secondary" id="portalProofBtn" type="button">Send Payment Proof</button>
+              <p class="public-helper">After payment, you can send your screenshot or transaction ID directly to the owner.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

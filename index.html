@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Krishna Residency</title>
+    <meta
+      name="description"
+      content="Mobile-friendly rent collection system for room rent, electricity, water, advance tracking, Aadhaar upload, and reminders."
+    />
+    <meta name="theme-color" content="#0d1218" />
+    <link rel="manifest" href="rent-collection.webmanifest" />
+    <link rel="icon" href="assets/icons/rent-collection-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/icons/rent-collection-icon.svg" />
+    <link rel="stylesheet" href="assets/css/rent-collection.css?v=20260602-lock-flow-3" />
+    <script>
+      window.APP_VERSION = "20260602-lock-flow-5";
+    </script>
+    <script defer src="assets/js/rent-collection.js?v=20260602-lock-flow-4"></script>
+  </head>
+  <body>
+    <style>
+      #pinOverlay {
+        position: fixed;
+        inset: 0;
+        background: #0d1218;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .pin-card {
+        background: #1a232f;
+        padding: 32px;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 320px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      }
+      .pin-card h2 { color: #fff; margin-top: 0; text-align: center; margin-bottom: 24px; }
+      .pin-field input { width: 100%; background: #0d1218; border: 1px solid #2a3b4c; padding: 12px; border-radius: 8px; color: #fff; font-size: 1.2rem; text-align: center; letter-spacing: 4px; margin-bottom: 16px; }
+      .pin-button { width: 100%; background: #06b6d4; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; color:#000; }
+      .pin-error { color: #ef4444; font-size: 0.85rem; text-align: center; margin-bottom: 12px; display: none; }
+    </style>
+    <div id="pinOverlay">
+      <form class="pin-card" id="pinForm">
+        <h2>Enter PIN</h2>
+        <div class="pin-error" id="pinError">Invalid PIN</div>
+        <div class="pin-field">
+          <input type="password" id="pinInput" placeholder="••••" required autofocus />
+        </div>
+        <button type="submit" class="pin-button">Unlock</button>
+      </form>
+    </div>
+
+    <div class="app-shell" id="appShell">
+      <aside class="sidebar" id="appSidebar" aria-label="Primary navigation">
+        <div class="sidebar-brand">
+          <div class="brand-mark brand-mark-logo">
+            <img
+              id="sidebarBrandLogo"
+              class="brand-logo-image"
+              src="assets/branding/krishna-residency-logo.png"
+              alt="Krishna Residency logo"
+            />
+          </div>
+          <div class="brand-copy">
+            <h1 id="sidebarPropertyName">Krishna Residency</h1>
+          </div>
+        </div>
+
+        <button class="home-chip" data-tab="overview" type="button">Home</button>
+
+        <nav class="sidebar-nav" aria-label="Primary">
+          <button class="nav-tab is-active" data-tab="overview" type="button">
+            <span>Overview</span>
+            <strong class="nav-badge" id="sidebarDueCount">0</strong>
+          </button>
+          <button class="nav-tab" data-tab="tenants" type="button">
+            <span>Tenants</span>
+            <strong class="nav-badge" id="sidebarTenantCount">0</strong>
+          </button>
+          <button class="nav-tab" data-tab="collections" type="button">
+            <span>Collections</span>
+          </button>
+          <button class="nav-tab" data-tab="reminders" type="button">
+            <span>Reminders</span>
+          </button>
+          <button class="nav-tab" data-tab="settings" type="button">
+            <span>Settings</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-stack">
+          <section class="sidebar-card">
+            <span class="eyebrow">Live Snapshot</span>
+            <div class="sidebar-metric">
+              <span>Current month received</span>
+              <strong id="sidebarReceivedValue">Rs 0</strong>
+            </div>
+            <div class="sidebar-meta-line">
+              <span>Reminder time</span>
+              <strong id="sidebarReminderTime">09:00</strong>
+            </div>
+          </section>
+        </div>
+      </aside>
+      <div class="mobile-nav-backdrop" id="mobileNavBackdrop" data-mobile-nav="close" aria-hidden="true"></div>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="topbar-copy">
+            <button
+              class="mobile-menu-button"
+              data-mobile-nav="toggle"
+              id="mobileMenuBtn"
+              type="button"
+              aria-label="Open menu"
+              aria-controls="appSidebar"
+              aria-expanded="false"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            <h2 id="topbarPropertyName">Krishna Residency</h2>
+            <button
+              type="button"
+              id="lockAppBtn"
+              class="topbar-lock-button topbar-tool-button"
+              title="Lock App"
+              aria-label="Lock App"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </button>
+            <button
+              type="button"
+              id="manualSyncBtn"
+              class="topbar-lock-button topbar-tool-button"
+              title="Sync Data"
+              aria-label="Sync Data"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-8.21l-5.74-1.36"></path><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            </button>
+          </div>
+
+          <div class="topbar-tools">
+
+            <label class="quick-search" for="globalSearchInput">
+              <span class="quick-search-icon" aria-hidden="true"></span>
+              <input id="globalSearchInput" type="search" placeholder="Search tenant, room, or mobile" />
+            </label>
+            <button class="topbar-avatar" data-tab="settings" id="topbarOwnerBadge" type="button" aria-label="Open settings">
+              <img id="topbarOwnerLogoImage" src="assets/branding/krishna-residency-logo.png" alt="Krishna Residency logo" hidden />
+              <span id="topbarOwnerBadgeText" hidden></span>
+            </button>
+          </div>
+        </header>
+
+        <main class="panel-deck">
+          <section class="tab-panel is-active" data-panel="overview">
+            <section class="surface hero-surface">
+              <div class="hero-grid">
+                <div class="hero-main hero-main-actions">
+                  <div class="hero-main-copy">
+                    <span class="eyebrow">Monthly collection</span>
+                    <div class="hero-main-row">
+                      <div>
+                        <p class="hero-month" id="heroMonthLabel">Current month</p>
+                        <h3 id="heroCollectionValue">Rs 0</h3>
+                        <p id="heroCollectionNote">Collected so far in the active billing month.</p>
+                      </div>
+                      <div class="hero-trend-card">
+                        <span>Due</span>
+                        <strong id="heroDueCount">0</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="hero-inline-stats">
+                    <div class="hero-inline-card">
+                      <span>Pending</span>
+                      <strong id="heroPendingValue">Rs 0</strong>
+                    </div>
+                    <div class="hero-inline-card">
+                      <span>Advance</span>
+                      <strong id="heroAdvanceValue">Rs 0</strong>
+                    </div>
+                    <div class="hero-inline-card">
+                      <span>Active rooms</span>
+                      <strong id="heroTenantValue">0</strong>
+                    </div>
+                  </div>
+
+                  <div class="hero-actions">
+                    <button class="button button-accent" data-tab="collections" type="button">Collect</button>
+                    <button class="button button-ghost" data-tab="tenants" type="button">Tenants</button>
+                    <button class="button button-ghost" data-tab="reminders" type="button">Alerts</button>
+                  </div>
+                </div>
+
+                <div class="hero-side">
+                  <div class="hero-side-card">
+                    <span>Owner</span>
+                    <strong id="overviewOwnerValue">Not set</strong>
+                  </div>
+                  <div class="hero-side-card">
+                    <span>Property</span>
+                    <strong id="overviewPropertyValue">Not set</strong>
+                  </div>
+                  <div class="hero-side-card">
+                    <span>Area</span>
+                    <strong id="overviewCityValue">Not set</strong>
+                  </div>
+                  <div class="hero-side-card">
+                    <span>Reminder</span>
+                    <strong id="overviewReminderValue">09:00</strong>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="summary-grid" id="summaryGrid" aria-label="Dashboard summary"></section>
+
+            <div class="overview-grid overview-grid-single">
+              <section class="surface overview-card">
+                <div class="section-head">
+                  <div>
+                    <span class="eyebrow">Fast actions</span>
+                    <h3>Quick actions</h3>
+                  </div>
+                </div>
+
+                <div class="tool-grid">
+                  <button class="button button-accent" data-tab="tenants" type="button">Add Tenant</button>
+                  <button class="button button-ghost" data-tab="collections" type="button">Collect Rent</button>
+                  <button class="button button-ghost" data-tab="reminders" type="button">Due Queue</button>
+                  <button class="button button-ghost" data-tab="settings" type="button">Setup</button>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="tenants">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">Tenant workspace</span>
+                <h3>Tenant records</h3>
+              </div>
+              <button class="button button-ghost" id="resetTenantFormBtn" type="button">New Entry</button>
+            </div>
+
+            <div class="workspace-grid workspace-grid-tenant">
+              <div class="column-stack">
+                <section class="surface">
+                  <div class="section-head">
+                    <div>
+                      <span class="eyebrow">Directory</span>
+                      <h3>All Tenants</h3>
+                    </div>
+                  </div>
+                  <div class="search-panel">
+                    <label class="field">
+                      <input id="tenantSearchInput" type="search" placeholder="Search by name, room, mobile..." />
+                    </label>
+                    <div class="filter-row" id="tenantFilters">
+                      <button class="filter-chip is-active" data-filter="all" type="button">All</button>
+                      <button class="filter-chip" data-filter="active" type="button">Active</button>
+                      <button class="filter-chip" data-filter="due" type="button">Due Pending</button>
+                    </div>
+                  </div>
+                  <div class="tenant-directory" id="tenantDirectory"></div>
+                </section>
+
+                <section class="surface" id="tenantDetail"></section>
+              </div>
+
+              <div class="column-stack">
+                <section class="surface" id="tenantEntry">
+                <div class="section-head">
+                  <div>
+                    <span class="eyebrow">Tenant entry</span>
+                    <h3>Add or update a tenant</h3>
+                  </div>
+                </div>
+
+                <div class="inline-note inline-note-strong field-wide" id="tenantRequestDraftNote"></div>
+
+                <form id="tenantForm" class="form-grid">
+                  <input id="tenantId" name="tenantId" type="hidden" />
+
+                  <label class="field">
+                    <span>Tenant Name</span>
+                    <input id="tenantName" name="fullName" type="text" required placeholder="Tenant full name" />
+                  </label>
+
+                  <label class="field">
+                    <span>Mobile Number</span>
+                    <input id="tenantMobile" name="mobile" type="tel" inputmode="numeric" placeholder="10 digit mobile" />
+                  </label>
+
+                  <label class="field">
+                    <span>Total Members</span>
+                    <input id="tenantTotalMembers" name="totalMembers" type="number" min="1" step="1" placeholder="Example: 3" />
+                  </label>
+
+                  <label class="field">
+                    <span>Aadhaar Number</span>
+                    <input id="tenantAadhaarNumber" name="aadhaarNumber" type="text" inputmode="numeric" placeholder="12 digit Aadhaar number" />
+                  </label>
+
+                  <label class="field">
+                    <span>Room Number</span>
+                    <input id="tenantRoomNumber" name="roomNumber" type="text" required placeholder="Example: 101" />
+                  </label>
+
+                  <label class="field">
+                    <span>Floor / Wing</span>
+                    <input id="tenantFloor" name="floor" type="text" placeholder="Example: First Floor" />
+                  </label>
+
+                  <label class="field">
+                    <span>Start Date</span>
+                    <input id="tenantStartDate" name="startDate" type="date" required />
+                  </label>
+
+                  <label class="field">
+                    <span>Due Day</span>
+                    <input id="tenantDueDay" name="dueDay" type="number" min="1" max="28" />
+                  </label>
+
+                  <label class="field">
+                    <span>Monthly Rent</span>
+                    <input id="tenantMonthlyRent" name="monthlyRent" type="number" min="0" step="0.01" required />
+                  </label>
+
+                  <label class="field">
+                    <span>Default Water Bill</span>
+                    <input id="tenantWaterBill" name="defaultWaterBill" type="number" min="0" step="0.01" />
+                  </label>
+
+                  <label class="field">
+                    <span>Advance Paid</span>
+                    <input id="tenantAdvancePaid" name="advancePaid" type="number" min="0" step="0.01" />
+                  </label>
+
+                  <label class="field field-wide">
+                    <span>Address / ID Note</span>
+                    <textarea
+                      id="tenantAddress"
+                      name="address"
+                      rows="3"
+                      placeholder="Room address, hometown, or any ID note"
+                    ></textarea>
+                  </label>
+
+                  <label class="field field-wide">
+                    <span>Extra Notes</span>
+                    <textarea
+                      id="tenantNotes"
+                      name="notes"
+                      rows="3"
+                      placeholder="Meter note, agreement, or special note"
+                    ></textarea>
+                  </label>
+
+                  <label class="field field-wide upload-field">
+                    <span>Aadhaar Copy Upload</span>
+                    <div class="upload-action-row">
+                      <input id="tenantAadhaarFile" name="aadhaarFile" type="file" accept="image/*,application/pdf" />
+                      <button class="button button-ghost upload-capture-button" id="captureAadhaarBtn" type="button">Capture Photo</button>
+                    </div>
+                    <input id="tenantAadhaarCapture" name="aadhaarCapture" type="file" accept="image/*" capture="environment" hidden />
+                    <small id="aadhaarFileHint">Image or PDF, max 4 MB.</small>
+                  </label>
+
+                  <div class="inline-note field-wide" id="existingDocumentHint"></div>
+
+                  <div class="form-actions form-actions-wide">
+                    <button class="button button-accent" type="submit">Save Tenant</button>
+                    <button class="button button-ghost" id="scrollToCollectionBtn" type="button">Go To Collections</button>
+                  </div>
+                </form>
+              </section>
+
+              <section class="surface">
+                <div class="section-head">
+                  <div>
+                    <span class="eyebrow">Tenant intake link</span>
+                    <h3>Collect details into this dashboard</h3>
+                  </div>
+                </div>
+
+                <div class="doc-card share-link-panel" id="tenantIntakePanel">
+                  <strong>Tenant Intake Form</strong>
+                  <p id="tenantIntakeNote">Copy this form link and send it to the tenant. New requests will appear below.</p>
+                  <div class="tenant-actions receipt-action-row">
+                    <button class="mini-button" id="copyTenantIntakeLinkBtn" type="button">Copy Intake Link</button>
+                    <button class="mini-button" id="openTenantIntakeLinkBtn" type="button">Open Intake Form</button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="surface">
+                <div class="section-head tenant-request-head">
+                  <div>
+                    <span class="eyebrow">Request inbox</span>
+                    <h3>Pending tenant requests</h3>
+                  </div>
+                  <button class="mini-button" id="refreshTenantRequestsBtn" type="button">Refresh</button>
+                </div>
+
+                <div class="inline-note field-wide" id="tenantRequestsNote">Tenant requests will appear here after a tenant submits the intake form.</div>
+                <div class="tenant-request-list" id="tenantRequestList"></div>
+              </section>
+              </div>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="collections">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">Collection desk</span>
+                <h3>Payments and receipts</h3>
+              </div>
+            </div>
+
+            <div class="workspace-grid workspace-grid-collection workspace-grid-single">
+              <section class="surface" id="collectionEntry">
+                <div class="section-head">
+                  <div>
+                    <span class="eyebrow">Collection register</span>
+                    <h3>Save a monthly payment</h3>
+                  </div>
+                  <div class="inline-note" id="collectionModeLabel">Select tenant to record payment.</div>
+                </div>
+
+                <form id="paymentForm" class="form-grid form-grid-collection">
+                  <label class="field field-compact field-required">
+                    <span>Tenant</span>
+                    <select id="collectionTenantId" name="tenantId" required></select>
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Billing Month</span>
+                    <input id="collectionMonth" name="monthKey" type="month" required />
+                  </label>
+
+                  <label class="field field-compact field-required">
+                    <span>Rent Amount</span>
+                    <input id="collectionRentAmount" name="rentAmount" type="number" min="0" step="0.01" required />
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Previous Reading</span>
+                    <input id="collectionElectricityPreviousReading" name="electricityPreviousReading" type="number" min="0" step="0.01" placeholder="2480" />
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Current Reading</span>
+                    <input id="collectionElectricityCurrentReading" name="electricityCurrentReading" type="number" min="0" step="0.01" placeholder="2600" />
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Units</span>
+                    <input id="collectionElectricityUnits" name="electricityUnits" type="number" min="0" step="0.01" readonly />
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Rate</span>
+                    <input id="collectionElectricityRate" name="electricityRate" type="number" min="0" step="0.01" placeholder="8.5" />
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Electricity Bill</span>
+                    <input id="collectionElectricityBill" name="electricityBill" type="number" min="0" step="0.01" />
+                    <small id="electricityCalcHint"></small>
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Water Bill</span>
+                    <input id="collectionWaterBill" name="waterBill" type="number" min="0" step="0.01" />
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Other Charge</span>
+                    <input id="collectionOtherCharge" name="otherCharge" type="number" min="0" step="0.01" />
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Advance Used</span>
+                    <input id="collectionAdvanceUsed" name="advanceUsed" type="number" min="0" step="0.01" />
+                    <small id="availableAdvanceHint">Available advance: Rs 0</small>
+                  </label>
+
+                  <div class="field field-compact field-checkbox-inline">
+                    <label class="check-inline" for="collectionFullPaid">
+                      <input id="collectionFullPaid" name="fullPaid" type="checkbox" />
+                      <span>Full Paid</span>
+                    </label>
+                  </div>
+
+                  <label class="field field-compact">
+                    <span>Calculated Total</span>
+                    <input id="collectionCalculatedTotal" name="calculatedTotal" type="text" value="Rs 0" readonly />
+                    <small>Total = rent + electricity + water + other charge - advance used.</small>
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Paid Amount</span>
+                    <input id="collectionPaidAmount" name="paidAmount" type="number" min="0" step="0.01" />
+                    <small>Keep this unchecked for partial payments.</small>
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Payment Date</span>
+                    <input id="collectionPaymentDate" name="paymentDate" type="date" />
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Payment Mode</span>
+                    <select id="collectionPaymentMode" name="paymentMode">
+                      <option value="cash">Cash</option>
+                      <option value="upi">UPI</option>
+                      <option value="bank">Bank Transfer</option>
+                      <option value="pending">Pending</option>
+                    </select>
+                  </label>
+
+                  <div class="preview-card field-wide" id="collectionPreview">
+                    <div>
+                      <span>Total Bill</span>
+                      <strong id="previewTotalAmount">Rs 0</strong>
+                    </div>
+                    <div>
+                      <span>Paid</span>
+                      <strong id="previewPaidAmount">Rs 0</strong>
+                    </div>
+                    <div>
+                      <span>Balance</span>
+                      <strong id="previewBalanceAmount">Rs 0</strong>
+                    </div>
+                  </div>
+
+                  <div class="doc-card field-wide receipt-panel-compact" id="receiptPanel">
+                    <strong id="receiptPanelTitle">Receipt Actions</strong>
+                    <p id="receiptPanelNote">Save a collection to unlock receipt tools.</p>
+                    <div class="tenant-actions receipt-action-row">
+                      <button class="mini-button" id="generateReceiptBtn" type="button">Generate Receipt</button>
+                      <button class="mini-button" id="sendSmsReceiptBtn" type="button">SMS Receipt</button>
+                      <button class="mini-button" id="sendReceiptWhatsappBtn" type="button">WhatsApp PDF</button>
+                    </div>
+                  </div>
+
+                  <div class="doc-card field-wide payment-request-panel" id="paymentRequestPanel">
+                    <div class="payment-request-topline">
+                      <div>
+                        <strong>UPI Payment Request</strong>
+                        <p id="paymentRequestNote">Add a tenant and your UPI ID to prepare a WhatsApp payment request.</p>
+                      </div>
+                      <div class="payment-request-amount">
+                        <span>Due</span>
+                        <strong id="paymentRequestAmount">Rs 0</strong>
+                      </div>
+                    </div>
+                    <div class="payment-request-body">
+                      <div class="payment-request-qr-box">
+                        <img id="paymentRequestQrImage" alt="UPI QR code" hidden />
+                        <div class="payment-request-qr-empty" id="paymentRequestQrEmpty">UPI QR</div>
+                      </div>
+                      <div class="payment-request-meta">
+                        <div class="payment-request-meta-row">
+                          <span>Tenant</span>
+                          <strong id="paymentRequestTenant">-</strong>
+                        </div>
+                        <div class="payment-request-meta-row">
+                          <span>Month</span>
+                          <strong id="paymentRequestMonth">-</strong>
+                        </div>
+                        <div class="payment-request-meta-row">
+                          <span>UPI ID</span>
+                          <strong id="paymentRequestUpiId">Not set</strong>
+                        </div>
+                        <button class="mini-button" id="sendPaymentRequestBtn" type="button">WhatsApp Request</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="doc-card field-wide share-link-panel" id="tenantPortalPanel">
+                    <strong>Tenant Portal Link</strong>
+                    <p id="tenantPortalNote">Select a tenant to create that tenant's private rent portal link.</p>
+                    <div class="tenant-actions receipt-action-row">
+                      <button class="mini-button" id="copyTenantPortalLinkBtn" type="button">Copy Portal Link</button>
+                      <button class="mini-button" id="shareTenantPortalWhatsappBtn" type="button">WhatsApp Portal Link</button>
+                    </div>
+                  </div>
+
+                  <div class="form-actions form-actions-wide">
+                    <button class="button button-accent" id="paymentSubmitBtn" type="submit">Save Collection</button>
+                    <button class="button button-ghost" id="resetPaymentFormBtn" type="button">Reset Form</button>
+                  </div>
+                </form>
+              </section>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="reminders">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">Reminder hub</span>
+                <h3>Due queue</h3>
+              </div>
+            </div>
+
+            <div class="workspace-grid workspace-grid-reminders">
+              <section class="surface">
+                <div class="section-head">
+                  <div>
+                    <span class="eyebrow">Reminder center</span>
+                    <h3>Due tenants and quick actions</h3>
+                  </div>
+                </div>
+
+                <div class="due-list" id="dueList"></div>
+              </section>
+
+              <section class="surface utility-surface">
+                <div class="section-head">
+                  <div>
+                    <span class="eyebrow">Data tools</span>
+                    <h3>Backup and reminder tools</h3>
+                  </div>
+                </div>
+
+                <div class="tool-grid">
+                  <button class="button button-accent" id="copyDueSummaryBtn" type="button">Copy Due Summary</button>
+                  <button class="button button-ghost" id="createOwnerReminderBtn" type="button">Create Phone Reminder</button>
+                  <button class="button button-ghost" id="importDataBtn" type="button">Import Backup</button>
+                  <button class="button button-danger" id="clearAllBtn" type="button">Clear All Data</button>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="settings">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">Settings</span>
+                <h3>Property settings</h3>
+              </div>
+            </div>
+
+            <div class="workspace-grid workspace-grid-settings workspace-grid-single">
+              <section class="surface">
+                <div class="section-head">
+                  <div>
+                    <span class="eyebrow">Setup</span>
+                    <h3>Owner and property details</h3>
+                  </div>
+                </div>
+
+                <form id="profileForm" class="form-grid">
+                  <label class="field">
+                    <span>Owner Name</span>
+                    <input id="profileOwnerName" name="ownerName" type="text" placeholder="Example: Amit Kumar" />
+                  </label>
+
+                  <label class="field">
+                    <span>Property / Building Name</span>
+                    <input id="profilePropertyName" name="propertyName" type="text" placeholder="Example: RK Lodge" />
+                  </label>
+
+                  <label class="field">
+                    <span>Area / City</span>
+                    <input id="profileCity" name="city" type="text" placeholder="Example: Kendrapara" />
+                  </label>
+
+                  <label class="field field-wide">
+                    <span>Property Logo</span>
+                    <div class="logo-settings-card">
+                      <div class="logo-settings-preview">
+                        <img
+                          id="profileLogoPreview"
+                          src="assets/branding/krishna-residency-logo.png"
+                          alt="Krishna Residency logo preview"
+                        />
+                      </div>
+                      <div class="logo-settings-copy">
+                        <p>Use one logo across the dashboard, tenant links, and money receipts.</p>
+                        <div class="upload-action-row">
+                          <input id="profileLogoFile" name="brandLogoFile" type="file" accept="image/*" />
+                          <button class="button button-ghost" id="clearProfileLogoBtn" type="button">Use Default Logo</button>
+                        </div>
+                        <small id="profileLogoHint">Square image recommended. Keep it under 4 MB.</small>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label class="field">
+                    <span>Default Due Day</span>
+                    <input id="profileDueDay" name="defaultDueDay" type="number" min="1" max="28" />
+                  </label>
+
+                  <label class="field">
+                    <span>Reminder Time</span>
+                    <input id="profileReminderTime" name="reminderTime" type="time" />
+                  </label>
+
+                  <label class="field">
+                    <span>UPI ID</span>
+                    <input id="profileUpiId" name="upiId" type="text" placeholder="example@upi" />
+                    <small>This UPI ID is used in WhatsApp payment requests and QR code links.</small>
+                  </label>
+
+                  <label class="field">
+                    <span>Owner WhatsApp Number</span>
+                    <input id="profileOwnerWhatsapp" name="ownerWhatsapp" type="tel" inputmode="numeric" placeholder="10 digit mobile" />
+                    <small>This number is used for tenant payment proof replies from the portal.</small>
+                  </label>
+
+                    <label class="field">
+                      <span>App PIN Lock (Optional)</span>
+                      <input id="profileAppPin" name="appPin" type="number" placeholder="Set a PIN to lock the app" />
+                      <small>If set, you must enter this PIN when opening the app.</small>
+                    </label>
+
+                    <h4 style="margin-top: 1rem;">GitHub Cloud Sync Settings</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Setup cloud syncing via a private GitHub Gist.</p>
+
+                    <label class="field">
+                      <span>GitHub Personal Access Token</span>
+                      <input id="profileGithubToken" name="githubToken" type="password" placeholder="ghp_..." />
+                      <small>Create a classic token on GitHub with 'gist' scope.</small>
+                    </label>
+
+                    <label class="field">
+                      <span>GitHub Gist ID</span>
+                      <input id="profileGithubGistId" name="githubGistId" type="text" placeholder="e.g. 1a2b3c..." />
+                      <small>Create an empty secret Gist and paste its ID here.</small>
+                    </label>
+
+                  <div class="form-actions form-actions-wide">
+                    <button class="button button-accent" type="submit">Save Setup</button>
+                  </div>
+                </form>
+              </section>
+            </div>
+          </section>
+        </main>
+
+      </div>
+    </div>
+
+    <input id="importFileInput" type="file" accept=".json,application/json" hidden />
+    <div class="app-modal" id="appModal" hidden aria-hidden="true">
+      <div class="app-modal-backdrop" data-modal-close="backdrop"></div>
+      <div class="app-modal-card" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
+        <button class="modal-close" id="appModalCloseBtn" type="button" aria-label="Close dialog">Close</button>
+        <div class="app-modal-copy">
+          <span class="eyebrow">Software Dialog</span>
+          <h3 id="appModalTitle">Confirm action</h3>
+          <p id="appModalBody">Please review this action before continuing.</p>
+        </div>
+        <div class="app-modal-actions">
+          <button class="button button-ghost" id="appModalCancelBtn" type="button">Cancel</button>
+          <button class="button button-accent app-modal-confirm" id="appModalConfirmBtn" type="button">Confirm</button>
+        </div>
+      </div>
+    </div>
+    <div class="receipt-modal" id="receiptModal" hidden aria-hidden="true">
+      <div class="receipt-modal-backdrop" data-receipt-close="backdrop"></div>
+      <div class="receipt-modal-card" role="dialog" aria-modal="true" aria-labelledby="receiptModalTitle">
+        <div class="receipt-modal-head">
+          <div class="app-modal-copy">
+            <span class="eyebrow">Software Receipt</span>
+            <h3 id="receiptModalTitle">Money Receipt</h3>
+            <p>Review the receipt inside the software, then print it or share the PDF when needed.</p>
+          </div>
+          <button class="modal-close" id="receiptModalCloseBtn" type="button" aria-label="Close receipt">Close</button>
+        </div>
+        <div class="receipt-modal-body" id="receiptModalContent"></div>
+        <div class="app-modal-actions receipt-modal-actions">
+          <button class="button button-ghost" id="receiptModalSecondaryBtn" type="button">Close</button>
+          <button class="button button-ghost" id="receiptModalPrintBtn" type="button">Print / Save PDF</button>
+          <button class="button button-accent" id="receiptModalShareBtn" type="button">Share PDF Receipt</button>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="appToast" aria-live="polite" aria-atomic="true"></div>
+  </body>
+</html>

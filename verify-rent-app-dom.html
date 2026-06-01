@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent App Verification</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background: #f5f7fb;
+      }
+
+      pre {
+        padding: 16px;
+        border-radius: 16px;
+        background: #101b27;
+        color: #f8fbfd;
+        white-space: pre-wrap;
+      }
+
+      iframe {
+        width: 1440px;
+        height: 1700px;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body data-ready="pending">
+    <pre id="output">Running verification...</pre>
+    <iframe id="appFrame" src="http://127.0.0.1:8091/index.html#collections" title="Rent app"></iframe>
+    <script>
+      const output = document.getElementById("output");
+      const appFrame = document.getElementById("appFrame");
+
+      function wait(ms) {
+        return new Promise((resolve) => window.setTimeout(resolve, ms));
+      }
+
+      function fire(target, type) {
+        target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
+      }
+
+      function setValue(doc, id, value, type = "input") {
+        const field = doc.getElementById(id);
+        field.value = value;
+        fire(field, type);
+        return field;
+      }
+
+      async function waitFor(condition, timeoutMs = 8000, stepMs = 120) {
+        const start = Date.now();
+        while (Date.now() - start < timeoutMs) {
+          if (condition()) {
+            return;
+          }
+          await wait(stepMs);
+        }
+        throw new Error("Timed out while waiting for the app state.");
+      }
+
+      (async () => {
+        await new Promise((resolve, reject) => {
+          if (appFrame.contentDocument && appFrame.contentDocument.readyState === "complete") {
+            resolve();
+            return;
+          }
+          appFrame.addEventListener("load", resolve, { once: true });
+          window.setTimeout(() => reject(new Error("Iframe load timeout.")), 8000);
+        });
+
+        const win = appFrame.contentWindow;
+        const doc = win.document;
+        await wait(2000);
+
+        doc.getElementById("loadDemoBtn").click();
+        await waitFor(() => !doc.getElementById("appModal").hidden);
+        doc.getElementById("appModalConfirmBtn").click();
+        await wait(1800);
+
+        if (typeof win.switchTab === "function") {
+          win.switchTab("collections", { scroll: false });
+        }
+        await wait(500);
+
+        const tenantSelect = doc.getElementById("collectionTenantId");
+        if (!tenantSelect || tenantSelect.options.length < 2) {
+          throw new Error("No tenant was available after demo data load.");
+        }
+
+        tenantSelect.value = tenantSelect.options[1].value;
+        fire(tenantSelect, "change");
+        await wait(1200);
+
+        setValue(doc, "collectionRentAmount", "4500");
+        setValue(doc, "collectionElectricityUnits", "120");
+        setValue(doc, "collectionElectricityRate", "8");
+        setValue(doc, "collectionWaterBill", "250");
+        setValue(doc, "collectionOtherCharge", "100");
+        setValue(doc, "collectionAdvanceUsed", "50");
+        await wait(350);
+
+        const totalBeforeFullPaid = doc.getElementById("collectionCalculatedTotal").value;
+        const fullPaid = doc.getElementById("collectionFullPaid");
+        fullPaid.checked = true;
+        fire(fullPaid, "change");
+        await wait(350);
+
+        const paidAmountField = doc.getElementById("collectionPaidAmount");
+        const electricityBill = doc.getElementById("collectionElectricityBill").value;
+        const paidAfterFullPaid = paidAmountField.value;
+        const paidReadonly = paidAmountField.readOnly;
+
+        doc.getElementById("paymentForm").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        await wait(1800);
+        await waitFor(() => !doc.getElementById("generateReceiptBtn").disabled);
+
+        doc.getElementById("generateReceiptBtn").click();
+        await wait(700);
+
+        const receiptModal = doc.getElementById("receiptModal");
+        const receiptVisible = !receiptModal.hidden && receiptModal.getAttribute("aria-hidden") === "false";
+        const receiptText = doc.getElementById("receiptModalContent").textContent.replace(/\s+/g, " ").trim();
+
+        output.textContent = JSON.stringify(
+          {
+            totalBeforeFullPaid,
+            electricityBill,
+            paidAfterFullPaid,
+            paidReadonly,
+            receiptVisible,
+            receiptIncludesMoneyReceipt: receiptText.includes("Money Receipt"),
+            receiptIncludesReceived: receiptText.includes("Received"),
+            receiptPreview: receiptText.slice(0, 220)
+          },
+          null,
+          2
+        );
+        document.body.dataset.ready = "done";
+      })().catch((error) => {
+        output.textContent = `ERROR: ${error.message}`;
+        document.body.dataset.ready = "error";
+      });
+    </script>
+  
+
+</body></html>

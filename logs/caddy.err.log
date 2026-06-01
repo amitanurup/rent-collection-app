@@ -1,0 +1,11 @@
+{"level":"info","ts":1780348274.609401,"msg":"maxprocs: Leaving GOMAXPROCS=16: CPU quota undefined"}
+{"level":"info","ts":1780348274.6099162,"msg":"GOMEMLIMIT is updated","GOMEMLIMIT":14606600601,"previous":9223372036854775807}
+{"level":"info","ts":1780348274.6099162,"msg":"using config from file","file":"C:\\Users\\amita\\Documents\\New project\\rent-collection-app\\Caddyfile"}
+{"level":"info","ts":1780348274.6099162,"msg":"adapted config to JSON","adapter":"caddyfile"}
+{"level":"warn","ts":1780348274.6099162,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"C:\\Users\\amita\\Documents\\New project\\rent-collection-app\\Caddyfile","line":2}
+{"level":"warn","ts":1780348274.6104422,"logger":"admin","msg":"admin endpoint disabled"}
+{"level":"info","ts":1780348274.6104422,"logger":"tls.cache.maintenance","msg":"started background certificate maintenance","cache":"0x30503a189400"}
+{"level":"info","ts":1780348274.6104422,"logger":"http.auto_https","msg":"automatic HTTPS is completely disabled for server","server_name":"srv0"}
+{"level":"info","ts":1780348274.6120074,"logger":"http","msg":"servers shutting down with eternal grace period"}
+{"level":"info","ts":1780348274.6120074,"logger":"tls.cache.maintenance","msg":"stopped background certificate maintenance","cache":"0x30503a189400"}
+Error: loading initial config: loading new config: http app module: start: listening on :8091: listen tcp :8091: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.

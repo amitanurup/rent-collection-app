@@ -1,0 +1,17 @@
+{
+  "name": "Krishna Residency",
+  "short_name": "Krishna Residency",
+  "description": "Track room rent, electricity, water, advance, Aadhaar documents, and reminders on mobile.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4efe6",
+  "theme_color": "#1d7a5b",
+  "icons": [
+    {
+      "src": "assets/icons/rent-collection-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Project ZIP backups created by prepare-google-drive-backup.ps1 will appear in this folder.

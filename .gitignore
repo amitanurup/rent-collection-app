@@ -1,0 +1,10 @@
+.vercel
+
+# Local Netlify folder
+.netlify
+netlify-dist/
+
+# Android build and node modules
+node_modules/
+_apk-toolchain/
+apk-wrapper/build/

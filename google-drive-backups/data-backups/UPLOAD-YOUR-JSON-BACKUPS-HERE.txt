@@ -1,0 +1,1 @@
+Upload exported app JSON backup files in this folder before sending them to Google Drive.
