@@ -72,6 +72,7 @@ async function init() {
   checkLocalPin();
   bindEvents();
   await loadState();
+  checkSyncHash();
   syncLocalPinFromState();
   await loadDriveBackupState();
   ui.activeTab = getInitialTab();
@@ -96,6 +97,27 @@ async function init() {
     }
   });
   setInterval(autoSync, 15000);
+}
+
+function checkSyncHash() {
+  const hash = window.location.hash;
+  if (hash.startsWith("#sync=")) {
+    try {
+      const params = new URLSearchParams(hash.substring(1));
+      const token = params.get("sync");
+      const gist = params.get("gist");
+      if (token && gist) {
+        state.profile.githubToken = token;
+        state.profile.githubGistId = gist;
+        saveState();
+        showToast("App permanently connected to cloud database!");
+        // Remove the sensitive info from the URL without reloading
+        window.history.replaceState(null, null, window.location.pathname);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
 }
 
 function cacheElements() {
