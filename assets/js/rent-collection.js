@@ -786,7 +786,7 @@ function normalizeState(source) {
     defaultDueDay: clampNumber(profile.defaultDueDay, 1, 28, 5),
     reminderTime: isValidTime(profile.reminderTime) ? profile.reminderTime : "09:00",
     upiId: cleanString(profile.upiId),
-    ownerWhatsapp: cleanDigits(profile.ownerWhatsapp),
+    ownerWhatsapp: cleanMobileNumber(profile.ownerWhatsapp),
     appPin: cleanDigits(profile.appPin),
     brandLogoDataUrl: normalizeImageDataUrl(profile.brandLogoDataUrl),
     requestInboxId: cleanString(profile.requestInboxId),
@@ -803,7 +803,7 @@ function normalizeTenant(source) {
   const tenant = {
     id: cleanString(source.id) || makeId("tenant"),
     fullName: cleanString(source.fullName),
-    mobile: cleanDigits(source.mobile),
+    mobile: cleanMobileNumber(source.mobile),
     totalMembers: toWholeNumber(source.totalMembers),
     aadhaarNumber: cleanDigits(source.aadhaarNumber).slice(0, 12),
     roomNumber: cleanString(source.roomNumber),
@@ -2177,7 +2177,7 @@ async function handleProfileSave(event) {
     defaultDueDay: clampNumber(elements.profileDueDay.value, 1, 28, 5),
     reminderTime: isValidTime(elements.profileReminderTime.value) ? elements.profileReminderTime.value : "09:00",
     upiId: cleanString(elements.profileUpiId ? elements.profileUpiId.value : ""),
-    ownerWhatsapp: cleanDigits(elements.profileOwnerWhatsapp ? elements.profileOwnerWhatsapp.value : ""),
+    ownerWhatsapp: cleanMobileNumber(elements.profileOwnerWhatsapp ? elements.profileOwnerWhatsapp.value : ""),
     githubToken: state.profile.githubToken,
     githubGistId: state.profile.githubGistId,
     brandLogoDataUrl: nextLogoDataUrl,
@@ -2752,7 +2752,7 @@ function buildTenantPortalPayload(tenant, snapshot) {
       o: state.profile.ownerName || "Owner",
       c: state.profile.city || "",
       u: cleanString(state.profile.upiId),
-      w: cleanDigits(state.profile.ownerWhatsapp),
+      w: cleanMobileNumber(state.profile.ownerWhatsapp),
       i: cleanString(state.profile.requestInboxId)
     },
     tn: {
@@ -2812,7 +2812,7 @@ function buildPaymentRequestContext(tenant, snapshot) {
     portalLink: buildTenantPortalLink(tenant, snapshot),
     propertyName: state.profile.propertyName || "Property",
     ownerName: state.profile.ownerName || "Owner",
-    ownerWhatsapp: cleanDigits(state.profile.ownerWhatsapp)
+    ownerWhatsapp: cleanMobileNumber(state.profile.ownerWhatsapp)
   };
 }
 
@@ -4157,6 +4157,11 @@ function cleanString(value) {
 
 function cleanDigits(value) {
   return String(value || "").replace(/\D+/g, "");
+}
+
+function cleanMobileNumber(value) {
+  const digits = cleanDigits(value);
+  return digits.length >= 10 ? digits.slice(-10) : digits;
 }
 
 function toMoney(value) {
