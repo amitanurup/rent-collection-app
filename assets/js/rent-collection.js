@@ -278,7 +278,10 @@ function bindEvents() {
   elements.profileForm.addEventListener("submit", handleProfileSave);
   elements.tenantForm.addEventListener("submit", handleTenantSave);
   elements.paymentForm.addEventListener("submit", handlePaymentSave);
-  elements.resetTenantFormBtn.addEventListener("click", resetTenantForm);
+  elements.resetTenantFormBtn.addEventListener("click", () => {
+    resetTenantForm();
+    switchTab("tenant-entry");
+  });
   elements.scrollToCollectionBtn.addEventListener("click", () => scrollToSection("collectionEntry"));
   elements.resetPaymentFormBtn.addEventListener("click", () => hydratePaymentForm());
   elements.collectionTenantId.addEventListener("change", () => {
@@ -2076,9 +2079,8 @@ async function runAction(action, tenantId, monthKey) {
   }
 
   if (action === "edit") {
-    switchTab("tenants", { scroll: false });
+    switchTab("tenant-entry", { scroll: false });
     fillTenantForm(tenant);
-    scrollToSection("tenantEntry");
     return;
   }
 
@@ -2260,6 +2262,7 @@ async function handleTenantSave(event) {
   resetTenantForm();
   renderAll();
   showToast(existing ? "Tenant record was updated." : "A new tenant was saved.");
+  switchTab("tenants");
 }
 
 async function handlePaymentSave(event) {

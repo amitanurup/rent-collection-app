@@ -76,8 +76,11 @@
             <strong class="nav-badge" id="sidebarDueCount">0</strong>
           </button>
           <button class="nav-tab" data-tab="tenants" type="button">
-            <span>Tenants</span>
+            <span>Tenants List</span>
             <strong class="nav-badge" id="sidebarTenantCount">0</strong>
+          </button>
+          <button class="nav-tab" data-tab="tenant-entry" type="button">
+            <span>Add Tenant</span>
           </button>
           <button class="nav-tab" data-tab="collections" type="button">
             <span>Collections</span>
@@ -265,7 +268,17 @@
 
                 <section class="surface" id="tenantDetail"></section>
               </div>
+            </div>
+          </section>
 
+          <section class="tab-panel" data-panel="tenant-entry">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">Tenant Management</span>
+                <h3>Add or update a tenant</h3>
+              </div>
+            </div>
+            <div class="workspace-grid workspace-grid-single">
               <div class="column-stack">
                 <section class="surface" id="tenantEntry">
                 <div class="section-head">
@@ -373,7 +386,6 @@
                   </div>
                 </form>
               </section>
-
 
               </div>
             </div>
