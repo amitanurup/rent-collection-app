@@ -3,15 +3,15 @@
  * Rent Collection App - Custom Server Sync Backend
  * Instructions:
  * 1. Upload this file to your hosting (e.g. inside public_html).
- * 2. Change the \ below to a strong password.
+ * 2. Change the $SECRET_KEY below to a strong password.
  * 3. In the Rent App, enter the URL to this file (e.g. https://yourwebsite.com/rent-sync.php) and your Secret Key.
  */
 
 // CHANGE THIS PASSWORD!
-\ = "Amit@1234";
+$SECRET_KEY = "Amit@1234";
 
 // The file where data will be saved
-\ = "rent-database.json";
+$DATA_FILE = "rent-database.json";
 
 // Allow Cross-Origin Requests from the app
 header("Access-Control-Allow-Origin: *");
@@ -20,30 +20,30 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Secret-Key"
 header("Content-Type: application/json");
 
 // Handle preflight OPTIONS request
-if (\['REQUEST_METHOD'] === 'OPTIONS') {
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
 // Get the Secret Key from Headers or Query params
-\ = '';
-if (isset(\['HTTP_X_SECRET_KEY'])) {
-    \ = \['HTTP_X_SECRET_KEY'];
-} elseif (isset(\['key'])) {
-    \ = \['key'];
+$provided_key = '';
+if (isset($_SERVER['HTTP_X_SECRET_KEY'])) {
+    $provided_key = $_SERVER['HTTP_X_SECRET_KEY'];
+} elseif (isset($_GET['key'])) {
+    $provided_key = $_GET['key'];
 }
 
 // Verify Secret Key
-if (\ !== \) {
+if ($provided_key !== $SECRET_KEY) {
     http_response_code(401);
     echo json_encode(["error" => "Unauthorized: Invalid Secret Key"]);
     exit();
 }
 
 // GET Request: Download Data
-if (\['REQUEST_METHOD'] === 'GET') {
-    if (file_exists(\)) {
-        echo file_get_contents(\);
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (file_exists($DATA_FILE)) {
+        echo file_get_contents($DATA_FILE);
     } else {
         echo json_encode(["_timestamp" => 0, "value" => null]);
     }
@@ -51,14 +51,14 @@ if (\['REQUEST_METHOD'] === 'GET') {
 }
 
 // POST Request: Upload Data
-if (\['REQUEST_METHOD'] === 'POST') {
-    \ = file_get_contents('php://input');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $json_data = file_get_contents('php://input');
     
     // Validate JSON
-    \ = json_decode(\, true);
-    if (json_last_error() === JSON_ERROR_NONE && isset(\['value'])) {
+    $decoded = json_decode($json_data, true);
+    if (json_last_error() === JSON_ERROR_NONE && isset($decoded['value'])) {
         // Save to file
-        file_put_contents(\, \);
+        file_put_contents($DATA_FILE, $json_data);
         echo json_encode(["success" => true, "message" => "Data saved successfully!"]);
     } else {
         http_response_code(400);
