@@ -258,7 +258,7 @@ function cacheElements() {
     heroAdvanceValue: document.getElementById("heroAdvanceValue"),
     heroTenantValue: document.getElementById("heroTenantValue"),
     globalSearchInput: document.getElementById("globalSearchInput"),
-    manualSyncBtn: document.getElementById("manualSyncBtn"),
+    downloadDataBtn: document.getElementById("downloadDataBtn"),
     lockAppBtn: document.getElementById("lockAppBtn"),
     topbarPropertyName: document.getElementById("topbarPropertyName"),
     topbarBackupLabel: document.getElementById("topbarBackupLabel"),
@@ -312,8 +312,8 @@ function bindEvents() {
   if (elements.lockAppBtn) {
     elements.lockAppBtn.addEventListener("click", handleLockApp);
   }
-  if (elements.manualSyncBtn) {
-    elements.manualSyncBtn.addEventListener("click", forceManualSync);
+  if (elements.downloadDataBtn) {
+    elements.downloadDataBtn.addEventListener("click", forceManualSync);
   }
   if (elements.copySyncLinkBtn) {
     elements.copySyncLinkBtn.addEventListener("click", handleCopySyncLink);
