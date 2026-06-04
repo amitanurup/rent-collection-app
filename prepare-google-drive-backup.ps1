@@ -21,6 +21,7 @@ New-Item -ItemType Directory -Path $stageRoot -Force | Out-Null
 
 $includeItems = @(
     "index.html",
+    "tenant-portal.html",
     "README.md",
     "GOOGLE-DRIVE-BACKUP.md",
     "Caddyfile",

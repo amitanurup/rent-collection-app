@@ -9,7 +9,7 @@ const AUTO_BACKUP_LATEST_FILE = "rent-collection-latest.json";
 const MAX_DOCUMENT_SIZE = 4 * 1024 * 1024;
 const AUTO_BACKUP_DELAY_MS = 1200;
 const APP_TABS = ["overview", "tenants", "collections", "reminders", "settings"];
-const PUBLIC_SITE_FALLBACK_URL = "https://krishna-residency-rent.netlify.app";
+const PUBLIC_SITE_FALLBACK_URL = "https://etechworld.in/rent%20app";
 
 const APP_PASSWORD = "Amit@1990";
 const SYNC_URL = "https://etechworld.in/rent%20app/rent-sync.php";

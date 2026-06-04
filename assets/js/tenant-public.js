@@ -1,4 +1,4 @@
-const PUBLIC_SITE_FALLBACK_URL = "https://krishna-residency-rent.netlify.app";
+const PUBLIC_SITE_FALLBACK_URL = "https://etechworld.in/rent%20app";
 const PUBLIC_DOCUMENT_SIZE_LIMIT = 4 * 1024 * 1024;
 
 const publicMoneyFormatter = new Intl.NumberFormat("en-IN", {
@@ -489,6 +489,10 @@ function readFileAsDataUrl(file) {
   });
 }
 
+async function requestTenantService(payload) {
+  console.warn("Tenant request service is disabled.");
+  return { ok: false, error: "Service unavailable" };
+}
 
 function getServiceBaseUrl() {
   const origin = window.location.origin || "";
