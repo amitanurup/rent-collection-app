@@ -88,11 +88,9 @@ async function init() {
 
   window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
-      autoSync();
-    }
+          }
   });
-  setInterval(autoSync, 15000);
-}
+  }
 
 
 
@@ -115,9 +113,7 @@ function cacheElements() {
     profileUpiId: document.getElementById("profileUpiId"),
     profileOwnerWhatsapp: document.getElementById("profileOwnerWhatsapp"),
     profileAppPin: document.getElementById("profileAppPin"),
-    profileGithubToken: document.getElementById("profileGithubToken"),
-    profileGithubGistId: document.getElementById("profileGithubGistId"),
-
+        
     tenantForm: document.getElementById("tenantForm"),
     tenantId: document.getElementById("tenantId"),
     tenantName: document.getElementById("tenantName"),
@@ -213,8 +209,7 @@ function cacheElements() {
     heroAdvanceValue: document.getElementById("heroAdvanceValue"),
     heroTenantValue: document.getElementById("heroTenantValue"),
     globalSearchInput: document.getElementById("globalSearchInput"),
-    downloadDataBtn: document.getElementById("downloadDataBtn"),
-    lockAppBtn: document.getElementById("lockAppBtn"),
+        lockAppBtn: document.getElementById("lockAppBtn"),
     topbarPropertyName: document.getElementById("topbarPropertyName"),
     topbarBackupLabel: document.getElementById("topbarBackupLabel"),
     topbarOwnerBadge: document.getElementById("topbarOwnerBadge"),
@@ -267,10 +262,7 @@ function bindEvents() {
   if (elements.lockAppBtn) {
     elements.lockAppBtn.addEventListener("click", handleLockApp);
   }
-  if (elements.downloadDataBtn) {
-    elements.downloadDataBtn.addEventListener("click", forceManualSync);
-  }
-  
+    
   elements.profileForm.addEventListener("submit", handleProfileSave);
   elements.tenantForm.addEventListener("submit", handleTenantSave);
   elements.paymentForm.addEventListener("submit", handlePaymentSave);
@@ -570,8 +562,7 @@ function createDefaultState() {
       upiId: "",
       ownerWhatsapp: "",
       appPin: "",
-      githubToken: "",
-      githubGistId: "",
+            githubGistId: "",
       brandLogoDataUrl: "",
       requestInboxId: "",
       requestAdminKey: ""
@@ -692,111 +683,8 @@ async function loadState() {
   }
 }
 
-let isAutoSyncing = false;
 
-async function autoSync() {
-  if (isAutoSyncing) return;
-  const config = await getGithubSyncConfig();
-  if (!config) return;
-  isAutoSyncing = true;
-  try {
-    const db = await getDb();
-    let oldLocalValue = await new Promise((resolve) => {
-      const transaction = db.transaction(DB_STORE, "readonly");
-      const request = transaction.objectStore(DB_STORE).get(DB_KEY);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => resolve(null);
-    });
-    const oldTimestamp = oldLocalValue ? oldLocalValue._timestamp : 0;
-    
-    await loadState();
-    
-    let newLocalValue = await new Promise((resolve) => {
-      const transaction = db.transaction(DB_STORE, "readonly");
-      const request = transaction.objectStore(DB_STORE).get(DB_KEY);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => resolve(null);
-    });
-    const newTimestamp = newLocalValue ? newLocalValue._timestamp : 0;
-    
-    if (newTimestamp > oldTimestamp) {
-      console.log("State synced from cloud.");
-      populateProfileForm();
-      renderAll();
-      showToast("Data synced from other device");
-    }
-  } catch (error) {
-    console.error("Auto sync failed", error);
-  } finally {
-    isAutoSyncing = false;
-  }
-}
 
-async function forceManualSync(event) {
-  const btn = event ? event.currentTarget : null;
-  if (btn) {
-    btn.disabled = true;
-    btn.style.opacity = "0.5";
-  }
-  
-  try {
-    const config = await getGithubSyncConfig();
-    if (!config) {
-      showToast("GitHub sync is not configured. Add your token in Setup.");
-      return;
-    }
-    
-    showToast("Fetching from GitHub Gist...");
-    
-    const response = await fetch(`https://api.github.com/gists/${config.gistId}`, {
-      headers: {
-        "Authorization": `token ${config.token}`,
-        "Accept": "application/vnd.github.v3+json"
-      }
-    });
-    if (response.ok) {
-      const gist = await response.json();
-      const filename = `${DB_KEY}.json`;
-      if (gist.files && gist.files[filename]) {
-        const cloudData = JSON.parse(gist.files[filename].content);
-        if (cloudData && cloudData.value) {
-          // Preserve local token and gist ID
-          const localToken = config.token;
-          const localGistId = config.gistId;
-          
-          let newValue = cloudData.value;
-          if (newValue && newValue.state && newValue.state.profile) {
-            if (localToken) newValue.state.profile.githubToken = localToken;
-            if (localGistId) newValue.state.profile.githubGistId = localGistId;
-          } else if (newValue && newValue.profile) {
-            if (localToken) newValue.profile.githubToken = localToken;
-            if (localGistId) newValue.profile.githubGistId = localGistId;
-          }
-          
-          // Force overwrite local DB with cloud data
-          newValue._timestamp = Date.now();
-          await writeToLocalDb(DB_KEY, newValue);
-          console.log("Forced gist sync completed.");
-        }
-      }
-    } else {
-      console.warn("Gist data not found or fetch failed during forced sync.");
-    }
-    
-    await loadState();
-    populateProfileForm();
-    renderAll();
-    showToast("Data synced successfully!");
-  } catch (error) {
-    console.error("Manual sync failed", error);
-    showToast("Failed to sync data.");
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.style.opacity = "1";
-    }
-  }
-}
 
 async function loadDriveBackupState() {
   driveFolderHandle = null;
@@ -828,9 +716,7 @@ function normalizeState(source) {
     brandLogoDataUrl: normalizeImageDataUrl(profile.brandLogoDataUrl),
     requestInboxId: cleanString(profile.requestInboxId),
     requestAdminKey: cleanString(profile.requestAdminKey),
-    githubToken: cleanString(profile.githubToken),
-    githubGistId: cleanString(profile.githubGistId)
-  };
+          };
   normalized.tenants = Array.isArray(source && source.tenants) ? source.tenants.map(normalizeTenant) : [];
   normalized.tenants.sort(sortTenants);
   return normalized;
@@ -928,13 +814,7 @@ function populateProfileForm() {
   if (elements.profileAppPin) {
     elements.profileAppPin.value = state.profile.appPin || "";
   }
-  if (elements.profileGithubToken) {
-    elements.profileGithubToken.value = state.profile.githubToken || "";
-  }
-  if (elements.profileGithubGistId) {
-    elements.profileGithubGistId.value = state.profile.githubGistId || "e6074ee14fc1506ed012f42f894a16d7";
-  }
-  renderLogoPreview();
+      renderLogoPreview();
 }
 
 function renderAll() {
@@ -2237,10 +2117,7 @@ async function handleProfileSave(event) {
     })
   );
 
-  if (tokenChanged || gistChanged) {
-    showToast("Sync settings updated.");
-  }
-
+  
   await persistState();
   renderAll();
 
@@ -4433,106 +4310,16 @@ async function writeToLocalDb(key, value) {
   });
 }
 
-async function getGithubSyncConfig() {
-  if (state && state.profile && state.profile.githubToken && state.profile.githubGistId) {
-    return { token: state.profile.githubToken, gistId: state.profile.githubGistId };
-  }
-  const db = await getDb();
-  const localValue = await new Promise((resolve) => {
-    const transaction = db.transaction(DB_STORE, "readonly");
-    const request = transaction.objectStore(DB_STORE).get(DB_KEY);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => resolve(null);
-  });
-  
-  const stateObj = localValue && localValue.state ? localValue.state : localValue;
-  const profile = stateObj && stateObj.profile ? stateObj.profile : {};
-  if (profile.githubToken && profile.githubGistId) {
-    return { token: profile.githubToken, gistId: profile.githubGistId };
-  }
-  
-  return null;
-}
 
 async function readFromDb(key) {
   try {
     const db = await getDb();
-    let localValue = await new Promise((resolve, reject) => {
+    let localValue = await new Promise((resolve) => {
       const transaction = db.transaction(DB_STORE, "readonly");
-      const store = transaction.objectStore(DB_STORE);
-      const request = store.get(key);
+      const request = transaction.objectStore(DB_STORE).get(key);
       request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      request.onerror = () => resolve(null);
     });
-
-    const config = await getGithubSyncConfig();
-    if (config) {
-      try {
-        const response = await fetch(`https://api.github.com/gists/${config.gistId}`, {
-          headers: {
-            "Authorization": `token ${config.token}`,
-            "Accept": "application/vnd.github.v3+json"
-          }
-        });
-        if (response.ok) {
-          const gist = await response.json();
-          const filename = `${key}.json`;
-          if (gist.files && gist.files[filename]) {
-            const cloudData = JSON.parse(gist.files[filename].content);
-            if (!localValue || !localValue._timestamp || (cloudData._timestamp && cloudData._timestamp > localValue._timestamp)) {
-              const localToken = config.token;
-              const localGistId = config.gistId;
-              localValue = cloudData.value;
-              if (localValue && localValue.state && localValue.state.profile) {
-                if (localToken) localValue.state.profile.githubToken = localToken;
-                if (localGistId) localValue.state.profile.githubGistId = localGistId;
-              } else if (localValue && localValue.profile) {
-                if (localToken) localValue.profile.githubToken = localToken;
-                if (localGistId) localValue.profile.githubGistId = localGistId;
-              }
-              await writeToLocalDb(key, localValue);
-            }
-          } else if (localValue) {
-            console.log("Auto-uploading existing local data to Gist...");
-            if (typeof localValue === "object" && localValue !== null && !localValue._timestamp) {
-              localValue._timestamp = Date.now();
-              await writeToLocalDb(key, localValue);
-            }
-            // Strip secrets from cloud data to avoid GitHub Secret Scanner revoking tokens!
-            let safeState = JSON.parse(JSON.stringify(localValue));
-            if (safeState && safeState.state && safeState.state.profile) {
-              delete safeState.state.profile.githubToken;
-              delete safeState.state.profile.githubGistId;
-            } else if (safeState && safeState.profile) {
-              delete safeState.profile.githubToken;
-              delete safeState.profile.githubGistId;
-            }
-
-            await fetch(`https://api.github.com/gists/${config.gistId}`, {
-              method: "PATCH",
-              headers: {
-                "Authorization": `token ${config.token}`,
-                "Accept": "application/vnd.github.v3+json",
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                files: {
-                  [filename]: {
-                    content: JSON.stringify({
-                      value: safeState,
-                      _timestamp: localValue && localValue._timestamp ? localValue._timestamp : Date.now()
-                    })
-                  }
-                }
-              })
-            });
-          }
-        }
-      } catch (e) {
-        console.error("Gist read error:", e);
-      }
-    }
-
     return localValue;
   } catch (error) {
     console.error(error);
@@ -4545,42 +4332,6 @@ async function writeToDb(key, value) {
     value._timestamp = Date.now();
   }
   await writeToLocalDb(key, value);
-  
-  const config = await getGithubSyncConfig();
-  if (config) {
-    try {
-      const filename = `${key}.json`;
-      let safeState = JSON.parse(JSON.stringify(value));
-      if (safeState && safeState.state && safeState.state.profile) {
-        delete safeState.state.profile.githubToken;
-        delete safeState.state.profile.githubGistId;
-      } else if (safeState && safeState.profile) {
-        delete safeState.profile.githubToken;
-        delete safeState.profile.githubGistId;
-      }
-
-      await fetch(`https://api.github.com/gists/${config.gistId}`, {
-        method: "PATCH",
-        headers: {
-          "Authorization": `token ${config.token}`,
-          "Accept": "application/vnd.github.v3+json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          files: {
-            [filename]: {
-              content: JSON.stringify({
-                value: safeState,
-                _timestamp: value._timestamp
-              })
-            }
-          }
-        })
-      });
-    } catch (e) {
-      console.error("Gist write error:", e);
-    }
-  }
 }
 
 async function deleteFromDb(key) {
