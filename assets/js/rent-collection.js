@@ -9,7 +9,7 @@ const AUTO_BACKUP_LATEST_FILE = "rent-collection-latest.json";
 const MAX_DOCUMENT_SIZE = 4 * 1024 * 1024;
 const AUTO_BACKUP_DELAY_MS = 1200;
 const APP_TABS = ["overview", "tenants", "collections", "reminders", "settings"];
-const PUBLIC_SITE_FALLBACK_URL = "https://etechworld.in/rent%20app";
+const PUBLIC_SITE_FALLBACK_URL = "https://amitanurup.github.io/rent-collection-app";
 
 const APP_PASSWORD = "Amit@1990";
 const SYNC_URL = "https://etechworld.in/rent%20app/rent-sync.php";
@@ -2676,7 +2676,11 @@ function getShareBaseUrl() {
     return PUBLIC_SITE_FALLBACK_URL;
   }
 
-  return origin.replace(/\/+$/, "");
+  const pathname = window.location.pathname || "";
+  const lastSlashIndex = pathname.lastIndexOf("/");
+  const baseDir = lastSlashIndex !== -1 ? pathname.slice(0, lastSlashIndex) : "";
+
+  return (origin.replace(/\/+$/, "") + baseDir).replace(/\/+$/, "");
 }
 
 function getServiceBaseUrl() {

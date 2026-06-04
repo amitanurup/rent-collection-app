@@ -1,4 +1,4 @@
-const PUBLIC_SITE_FALLBACK_URL = "https://etechworld.in/rent%20app";
+const PUBLIC_SITE_FALLBACK_URL = "https://amitanurup.github.io/rent-collection-app";
 const PUBLIC_DOCUMENT_SIZE_LIMIT = 4 * 1024 * 1024;
 
 const publicMoneyFormatter = new Intl.NumberFormat("en-IN", {
@@ -505,7 +505,11 @@ function getServiceBaseUrl() {
     return PUBLIC_SITE_FALLBACK_URL;
   }
 
-  return origin.replace(/\/+$/, "");
+  const pathname = window.location.pathname || "";
+  const lastSlashIndex = pathname.lastIndexOf("/");
+  const baseDir = lastSlashIndex !== -1 ? pathname.slice(0, lastSlashIndex) : "";
+
+  return (origin.replace(/\/+$/, "") + baseDir).replace(/\/+$/, "");
 }
 
 function readSharePayload() {
