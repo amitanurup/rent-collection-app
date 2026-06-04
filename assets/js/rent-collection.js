@@ -2284,8 +2284,8 @@ async function handleProfileSave(event) {
 
   await persistState();
   renderAll();
-  const syncSucceeded = await syncPublicProfile({ silent: true });
-  showToast(syncSucceeded ? "Setup was saved." : "Setup was saved locally. Public link sync will retry later.");
+  await syncPublicProfile({ silent: true });
+  showToast("Setup was saved.");
 }
 
 async function handleTenantSave(event) {
