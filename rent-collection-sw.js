@@ -1,4 +1,4 @@
-const CACHE_NAME = "rent-collection-v31";
+const CACHE_NAME = "rent-collection-v32";
 const APP_ASSETS = [
   "./index.html",
   "./tenant-portal.html",

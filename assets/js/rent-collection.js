@@ -4334,20 +4334,19 @@ async function autoSync() {
 
   isAutoSyncing = true;
   try {
-    const saved = await readFromDb(DB_KEY);
+    const saved = await readFromDb(DB_KEY, true);
     const newTs = saved && saved._timestamp ? saved._timestamp : 0;
     
-    if (newTs > currentDbTimestamp) {
+    if (newTs >= currentDbTimestamp || state.tenants.length === 0) {
       currentDbTimestamp = newTs;
       const source = saved && saved.state ? saved.state : saved;
       state = normalizeState(source || createDefaultState());
       
       populateProfileForm();
       renderAll();
-      showToast("Data auto-synced from server!");
     }
-  } catch (error) {
-    console.error("Auto sync failed", error);
+  } catch (e) {
+    console.error(e);
   } finally {
     isAutoSyncing = false;
   }
@@ -4431,7 +4430,7 @@ async function forceManualSync(event) {
   }
 }
 
-async function readFromDb(key) {
+async function readFromDb(key, allowSync = true) {
   try {
     const db = await getDb();
     let localValue = await new Promise((resolve) => {
@@ -4441,11 +4440,11 @@ async function readFromDb(key) {
       request.onerror = () => resolve(null);
     });
 
-    if (key === DB_KEY) {
+    if (allowSync && key === DB_KEY) {
       const config = await getServerSyncConfig();
       if (config) {
         try {
-          const response = await fetch(config.url, {
+          const response = await fetch(config.url + "?t=" + Date.now(), {
             method: "GET",
             headers: {
               "X-Secret-Key": config.key,
@@ -4456,21 +4455,18 @@ async function readFromDb(key) {
           if (response.ok) {
             const cloudData = await response.json();
             if (cloudData && cloudData.value) {
-              if (!localValue || !localValue._timestamp || (cloudData._timestamp && cloudData._timestamp > localValue._timestamp)) {
-                const localUrl = config.url;
-                const localKey = config.key;
-                
+              const cloudTs = cloudData._timestamp || cloudData.value._timestamp || 0;
+              const localTs = localValue && localValue._timestamp ? localValue._timestamp : 0;
+
+              if (cloudTs > localTs || !localValue || !localValue.state) {
                 localValue = cloudData.value;
                 if (!localValue) localValue = { state: { profile: {} } };
                 if (localValue.state) {
                   if (!localValue.state.profile) localValue.state.profile = {};
-                  localValue.state.profile.serverUrl = localUrl;
-                  localValue.state.profile.serverKey = localKey;
-                } else {
-                  if (!localValue.profile) localValue.profile = {};
-                  localValue.profile.serverUrl = localUrl;
-                  localValue.profile.serverKey = localKey;
+                  localValue.state.profile.serverUrl = config.url;
+                  localValue.state.profile.serverKey = config.key;
                 }
+                localValue._timestamp = cloudTs; // Ensure local DB gets the timestamp
                 await writeToLocalDb(key, localValue);
               }
             }
