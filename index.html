@@ -612,6 +612,7 @@
                 <span class="eyebrow">Settings</span>
                 <h3>Property settings</h3>
               </div>
+              <button class="button button-accent" id="downloadDataBtn" type="button" style="background: #22c55e;">Download Server Data</button>
             </div>
 
             <div class="workspace-grid workspace-grid-settings workspace-grid-single">
@@ -686,6 +687,21 @@
                       <span>App PIN Lock (Optional)</span>
                       <input id="profileAppPin" name="appPin" type="number" placeholder="Set a PIN to lock the app" />
                       <small>If set, you must enter this PIN when opening the app.</small>
+                    </label>
+
+                    <h4 style="margin-top: 1rem;">Custom Server Sync</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Sync data directly to your own hosting/website for 100% privacy.</p>
+
+                    <label class="field">
+                      <span>Server API URL</span>
+                      <input id="profileServerUrl" name="serverUrl" type="url" placeholder="https://yourwebsite.com/rent-sync.php" />
+                      <small>The full link to your uploaded rent-sync.php file.</small>
+                    </label>
+
+                    <label class="field">
+                      <span>Secret Sync Key</span>
+                      <input id="profileServerKey" name="serverKey" type="password" placeholder="Enter your secret key" />
+                      <small>The $SECRET_KEY you set inside the rent-sync.php file.</small>
                     </label>
 
                   <div class="form-actions form-actions-wide">

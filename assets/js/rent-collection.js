@@ -78,6 +78,10 @@ async function init() {
   renderAll();
   switchTab(ui.activeTab, { scroll: false, syncHash: false });
   syncMobileNavState();
+  if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    autoSync();
+  }
+  setInterval(autoSync, 15000);
   scrollToInitialHashTarget();
   registerInstallPrompt();
   await registerServiceWorker();
@@ -113,6 +117,9 @@ function cacheElements() {
     profileUpiId: document.getElementById("profileUpiId"),
     profileOwnerWhatsapp: document.getElementById("profileOwnerWhatsapp"),
     profileAppPin: document.getElementById("profileAppPin"),
+    profileServerUrl: document.getElementById("profileServerUrl"),
+    profileServerKey: document.getElementById("profileServerKey"),
+    downloadDataBtn: document.getElementById("downloadDataBtn"),
         
     tenantForm: document.getElementById("tenantForm"),
     tenantId: document.getElementById("tenantId"),
@@ -364,6 +371,9 @@ function bindEvents() {
     elements.openTenantIntakeLinkBtn.addEventListener("click", openTenantIntakeLink);
   }
   
+  if (elements.downloadDataBtn) {
+    elements.downloadDataBtn.addEventListener("click", forceManualSync);
+  }
   if (elements.deleteSavedPaymentBtn) {
     elements.deleteSavedPaymentBtn.addEventListener("click", deleteCurrentSavedPayment);
   }
@@ -565,7 +575,9 @@ function createDefaultState() {
             githubGistId: "",
       brandLogoDataUrl: "",
       requestInboxId: "",
-      requestAdminKey: ""
+      requestAdminKey: "",
+      serverUrl: "",
+      serverKey: ""
     },
     tenants: []
   };
@@ -716,6 +728,8 @@ function normalizeState(source) {
     brandLogoDataUrl: normalizeImageDataUrl(profile.brandLogoDataUrl),
     requestInboxId: cleanString(profile.requestInboxId),
     requestAdminKey: cleanString(profile.requestAdminKey),
+    serverUrl: cleanString(profile.serverUrl),
+    serverKey: cleanString(profile.serverKey)
           };
   normalized.tenants = Array.isArray(source && source.tenants) ? source.tenants.map(normalizeTenant) : [];
   normalized.tenants.sort(sortTenants);
@@ -813,6 +827,12 @@ function populateProfileForm() {
   }
   if (elements.profileAppPin) {
     elements.profileAppPin.value = state.profile.appPin || "";
+  }
+  if (elements.profileServerUrl) {
+    elements.profileServerUrl.value = state.profile.serverUrl || "";
+  }
+  if (elements.profileServerKey) {
+    elements.profileServerKey.value = state.profile.serverKey || "";
   }
       renderLogoPreview();
 }
@@ -2082,10 +2102,10 @@ async function handleProfileSave(event) {
   const nextLogoDataUrl =
     ui.pendingProfileLogoDataUrl === null ? state.profile.brandLogoDataUrl || "" : ui.pendingProfileLogoDataUrl || "";
   const appPin = elements.profileAppPin ? elements.profileAppPin.value.trim() : "";
-  const githubToken = elements.profileGithubToken ? elements.profileGithubToken.value.trim() : "";
-  const githubGistId = elements.profileGithubGistId ? elements.profileGithubGistId.value.trim() : "";
-  const tokenChanged = cleanString(githubToken) !== state.profile.githubToken;
-  const gistChanged = cleanString(githubGistId) !== state.profile.githubGistId;
+  const serverUrl = elements.profileServerUrl ? elements.profileServerUrl.value.trim() : "";
+  const serverKey = elements.profileServerKey ? elements.profileServerKey.value.trim() : "";
+  const urlChanged = cleanString(serverUrl) !== state.profile.serverUrl;
+  const keyChanged = cleanString(serverKey) !== state.profile.serverKey;
 
   state.profile = {
     ownerName: cleanString(elements.profileOwnerName.value),
@@ -2096,13 +2116,16 @@ async function handleProfileSave(event) {
     upiId: cleanString(elements.profileUpiId ? elements.profileUpiId.value : ""),
     ownerWhatsapp: cleanDigits(elements.profileOwnerWhatsapp ? elements.profileOwnerWhatsapp.value : ""),
     appPin: cleanDigits(appPin),
-    githubToken: cleanString(githubToken),
-    githubGistId: cleanString(githubGistId),
+    serverUrl: cleanString(serverUrl),
+    serverKey: cleanString(serverKey),
+    githubToken: state.profile.githubToken,
+    githubGistId: state.profile.githubGistId,
     brandLogoDataUrl: nextLogoDataUrl,
     requestInboxId: state.profile.requestInboxId,
     requestAdminKey: state.profile.requestAdminKey
   };
   ensureProfileAccessKeys();
+  if (urlChanged || keyChanged) showToast("Sync settings updated.");
   ui.pendingProfileLogoDataUrl = null;
   receiptLogoPdfPromise = null;
   
@@ -4311,6 +4334,109 @@ async function writeToLocalDb(key, value) {
 }
 
 
+let isAutoSyncing = false;
+
+async function getServerSyncConfig() {
+  const url = state?.profile?.serverUrl;
+  const key = state?.profile?.serverKey;
+  if (url && key) return { url, key };
+
+  const db = await getDb();
+  const localValue = await new Promise((resolve) => {
+    const transaction = db.transaction(DB_STORE, "readonly");
+    const request = transaction.objectStore(DB_STORE).get(DB_KEY);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => resolve(null);
+  });
+  
+  const stateObj = localValue && localValue.state ? localValue.state : localValue;
+  const profile = stateObj && stateObj.profile ? stateObj.profile : {};
+  if (profile.serverUrl && profile.serverKey) {
+    return { url: profile.serverUrl, key: profile.serverKey };
+  }
+  return null;
+}
+
+async function autoSync() {
+  if (isAutoSyncing) return;
+  const config = await getServerSyncConfig();
+  if (!config) return;
+
+  isAutoSyncing = true;
+  try {
+    await readFromDb(DB_KEY);
+  } catch (error) {
+    console.error("Auto sync failed", error);
+  } finally {
+    isAutoSyncing = false;
+  }
+}
+
+async function forceManualSync(event) {
+  const btn = event ? event.currentTarget : null;
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = "0.5";
+  }
+  
+  try {
+    const config = await getServerSyncConfig();
+    if (!config) {
+      showToast("Server Sync is not configured. Add URL and Key in Setup.");
+      return;
+    }
+    
+    showToast("Fetching from your server...");
+    
+    const response = await fetch(config.url, {
+      method: "GET",
+      headers: {
+        "X-Secret-Key": config.key,
+        "Accept": "application/json"
+      }
+    });
+    
+    if (response.ok) {
+      const cloudData = await response.json();
+      if (cloudData && cloudData.value) {
+        let newValue = cloudData.value;
+        const localUrl = config.url;
+        const localKey = config.key;
+        
+        if (newValue && newValue.state && newValue.state.profile) {
+          newValue.state.profile.serverUrl = localUrl;
+          newValue.state.profile.serverKey = localKey;
+        } else if (newValue && newValue.profile) {
+          newValue.profile.serverUrl = localUrl;
+          newValue.profile.serverKey = localKey;
+        }
+        
+        newValue._timestamp = Date.now();
+        await writeToLocalDb(DB_KEY, newValue);
+        console.log("Forced server sync completed.");
+      } else {
+        console.warn("Server data not found.");
+      }
+      
+      await loadState();
+      populateProfileForm();
+      renderAll();
+      showToast("Data synced successfully!");
+    } else {
+      console.error("Manual sync failed");
+      showToast("Failed to sync data.");
+    }
+  } catch (error) {
+    console.error("Manual sync failed", error);
+    showToast("Failed to sync data.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = "1";
+    }
+  }
+}
+
 async function readFromDb(key) {
   try {
     const db = await getDb();
@@ -4320,6 +4446,44 @@ async function readFromDb(key) {
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => resolve(null);
     });
+
+    if (key === DB_KEY) {
+      const config = await getServerSyncConfig();
+      if (config) {
+        try {
+          const response = await fetch(config.url, {
+            method: "GET",
+            headers: {
+              "X-Secret-Key": config.key,
+              "Accept": "application/json"
+            }
+          });
+          
+          if (response.ok) {
+            const cloudData = await response.json();
+            if (cloudData && cloudData.value) {
+              if (!localValue || !localValue._timestamp || (cloudData._timestamp && cloudData._timestamp > localValue._timestamp)) {
+                const localUrl = config.url;
+                const localKey = config.key;
+                
+                localValue = cloudData.value;
+                if (localValue && localValue.state && localValue.state.profile) {
+                  localValue.state.profile.serverUrl = localUrl;
+                  localValue.state.profile.serverKey = localKey;
+                } else if (localValue && localValue.profile) {
+                  localValue.profile.serverUrl = localUrl;
+                  localValue.profile.serverKey = localKey;
+                }
+                await writeToLocalDb(key, localValue);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Server read error:", e);
+        }
+      }
+    }
+
     return localValue;
   } catch (error) {
     console.error(error);
@@ -4332,6 +4496,36 @@ async function writeToDb(key, value) {
     value._timestamp = Date.now();
   }
   await writeToLocalDb(key, value);
+  
+  if (key === DB_KEY) {
+    const config = await getServerSyncConfig();
+    if (config) {
+      try {
+        let safeState = JSON.parse(JSON.stringify(value));
+        if (safeState && safeState.state && safeState.state.profile) {
+          delete safeState.state.profile.serverUrl;
+          delete safeState.state.profile.serverKey;
+        } else if (safeState && safeState.profile) {
+          delete safeState.profile.serverUrl;
+          delete safeState.profile.serverKey;
+        }
+        
+        await fetch(config.url, {
+          method: "POST",
+          headers: {
+            "X-Secret-Key": config.key,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            value: safeState,
+            _timestamp: value._timestamp
+          })
+        });
+      } catch (e) {
+        console.error("Server write error:", e);
+      }
+    }
+  }
 }
 
 async function deleteFromDb(key) {
