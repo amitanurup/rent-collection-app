@@ -436,7 +436,7 @@ function verifyPin(event) {
   const pinInput = elements.pinInput || document.getElementById("pinInput");
   const pinError = elements.pinError || document.getElementById("pinError");
   const pin = readStorageValue(window.localStorage, "local_app_pin");
-  const input = pinInput ? pinInput.value : "";
+  const input = pinInput ? cleanDigits(pinInput.value) : "";
 
   if (input === pin) {
     isPinUnlocked = true;
