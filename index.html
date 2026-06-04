@@ -16,7 +16,7 @@
     <script>
       window.APP_VERSION = "20260602-lock-flow-5";
     </script>
-    <script defer src="assets/js/rent-collection.js?v=20260602-lock-flow-4"></script>
+    <script defer src="assets/js/rent-collection.js?v=20260605-hardcoded-sync"></script>
   </head>
   <body>
     <style>
@@ -45,10 +45,10 @@
     </style>
     <div id="pinOverlay">
       <form class="pin-card" id="pinForm">
-        <h2>Enter PIN</h2>
-        <div class="pin-error" id="pinError">Invalid PIN</div>
+        <h2>Enter Password</h2>
+        <div class="pin-error" id="pinError">Invalid Password</div>
         <div class="pin-field">
-          <input type="password" id="pinInput" placeholder="••••" required autofocus />
+          <input type="password" id="pinInput" placeholder="Password" required autofocus />
         </div>
         <button type="submit" class="pin-button">Unlock</button>
       </form>
@@ -683,26 +683,9 @@
                     <small>This number is used for tenant payment proof replies from the portal.</small>
                   </label>
 
-                    <label class="field">
-                      <span>App PIN Lock (Optional)</span>
-                      <input id="profileAppPin" name="appPin" type="number" placeholder="Set a PIN to lock the app" />
-                      <small>If set, you must enter this PIN when opening the app.</small>
-                    </label>
 
-                    <h4 style="margin-top: 1rem;">Custom Server Sync</h4>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Sync data directly to your own hosting/website for 100% privacy.</p>
 
-                    <label class="field">
-                      <span>Server API URL</span>
-                      <input id="profileServerUrl" name="serverUrl" type="url" placeholder="https://yourwebsite.com/rent-sync.php" />
-                      <small>The full link to your uploaded rent-sync.php file.</small>
-                    </label>
 
-                    <label class="field">
-                      <span>Secret Sync Key</span>
-                      <input id="profileServerKey" name="serverKey" type="password" placeholder="Enter your secret key" />
-                      <small>The $SECRET_KEY you set inside the rent-sync.php file.</small>
-                    </label>
 
                   <div class="form-actions form-actions-wide">
                     <button class="button button-accent" type="submit">Save Setup</button>

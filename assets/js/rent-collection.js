@@ -11,6 +11,10 @@ const AUTO_BACKUP_DELAY_MS = 1200;
 const APP_TABS = ["overview", "tenants", "collections", "reminders", "settings"];
 const PUBLIC_SITE_FALLBACK_URL = "https://krishna-residency-rent.netlify.app";
 
+const APP_PASSWORD = "Amit@1990";
+const SYNC_URL = "https://etechworld.in/rent%20app/rent-sync.php";
+const SYNC_KEY = "Amit@1234";
+
 const BRAND_LOGO_WEB_PATH = "assets/branding/krishna-residency-logo.png";
 const RECEIPT_LOGO_PDF_PATH = "assets/branding/krishna-residency-logo-receipt.jpg";
 const SECTION_TAB_MAP = {
@@ -51,6 +55,7 @@ const ui = {
 
 let dbPromise = null;
 let state = createDefaultState();
+let currentDbTimestamp = 0;
 let driveFolderHandle = null;
 let driveBackupMeta = createDefaultDriveBackupMeta();
 let receiptLogoPdfPromise = null;
@@ -116,10 +121,6 @@ function cacheElements() {
     profileReminderTime: document.getElementById("profileReminderTime"),
     profileUpiId: document.getElementById("profileUpiId"),
     profileOwnerWhatsapp: document.getElementById("profileOwnerWhatsapp"),
-    profileAppPin: document.getElementById("profileAppPin"),
-    profileServerUrl: document.getElementById("profileServerUrl"),
-    profileServerKey: document.getElementById("profileServerKey"),
-    downloadDataBtn: document.getElementById("downloadDataBtn"),
         
     tenantForm: document.getElementById("tenantForm"),
     tenantId: document.getElementById("tenantId"),
@@ -404,11 +405,11 @@ function bindEvents() {
 }
 
 function checkLocalPin() {
-  const pin = readStorageValue(window.localStorage, "local_app_pin");
+  const isUnlocked = readStorageValue(window.sessionStorage, "app_unlocked") === "true";
   const appShell = elements.appShell || document.getElementById("appShell");
   const pinOverlay = elements.pinOverlay || document.getElementById("pinOverlay");
 
-  if (pin && !isPinUnlocked) {
+  if (!isUnlocked && !isPinUnlocked) {
     setElementDisplay(pinOverlay, "flex");
     setElementDisplay(appShell, "none");
     return;
@@ -419,13 +420,7 @@ function checkLocalPin() {
 }
 
 function syncLocalPinFromState() {
-  const savedPin = cleanDigits(state && state.profile ? state.profile.appPin : "");
-  if (savedPin) {
-    writeStorageValue(window.localStorage, "local_app_pin", savedPin);
-    return;
-  }
-
-  removeStorageValue(window.localStorage, "local_app_pin");
+  // obsolete
 }
 
 function verifyPin(event) {
@@ -435,12 +430,14 @@ function verifyPin(event) {
 
   const pinInput = elements.pinInput || document.getElementById("pinInput");
   const pinError = elements.pinError || document.getElementById("pinError");
-  const pin = readStorageValue(window.localStorage, "local_app_pin");
-  const input = pinInput ? cleanDigits(pinInput.value) : "";
+  const input = pinInput ? pinInput.value.trim() : "";
 
-  if (input === pin) {
+  if (input === APP_PASSWORD) {
     isPinUnlocked = true;
+    writeStorageValue(window.sessionStorage, "app_unlocked", "true");
     checkLocalPin();
+    // Force a data download upon successful login
+    autoSync();
     return;
   }
 
@@ -688,6 +685,7 @@ function createDemoState() {
 
 async function loadState() {
   const saved = await readFromDb(DB_KEY);
+  currentDbTimestamp = saved && saved._timestamp ? saved._timestamp : 0;
   const source = saved && saved.state ? saved.state : saved;
   state = normalizeState(source || createDefaultState());
   if (ensureProfileAccessKeys()) {
@@ -707,10 +705,14 @@ async function loadDriveBackupState() {
 }
 
 async function persistState() {
-  await writeToDb(DB_KEY, {
+  const obj = {
     savedAt: new Date().toISOString(),
     state
-  });
+  };
+  await writeToDb(DB_KEY, obj);
+  if (obj._timestamp) {
+    currentDbTimestamp = obj._timestamp;
+  }
 }
 
 function normalizeState(source) {
@@ -824,15 +826,6 @@ function populateProfileForm() {
   }
   if (elements.profileOwnerWhatsapp) {
     elements.profileOwnerWhatsapp.value = state.profile.ownerWhatsapp || "";
-  }
-  if (elements.profileAppPin) {
-    elements.profileAppPin.value = state.profile.appPin || "";
-  }
-  if (elements.profileServerUrl) {
-    elements.profileServerUrl.value = state.profile.serverUrl || "";
-  }
-  if (elements.profileServerKey) {
-    elements.profileServerKey.value = state.profile.serverKey || "";
   }
       renderLogoPreview();
 }
@@ -2101,11 +2094,6 @@ async function handleProfileSave(event) {
   event.preventDefault();
   const nextLogoDataUrl =
     ui.pendingProfileLogoDataUrl === null ? state.profile.brandLogoDataUrl || "" : ui.pendingProfileLogoDataUrl || "";
-  const appPin = elements.profileAppPin ? elements.profileAppPin.value.trim() : "";
-  const serverUrl = elements.profileServerUrl ? elements.profileServerUrl.value.trim() : "";
-  const serverKey = elements.profileServerKey ? elements.profileServerKey.value.trim() : "";
-  const urlChanged = cleanString(serverUrl) !== state.profile.serverUrl;
-  const keyChanged = cleanString(serverKey) !== state.profile.serverKey;
 
   state.profile = {
     ownerName: cleanString(elements.profileOwnerName.value),
@@ -2115,9 +2103,6 @@ async function handleProfileSave(event) {
     reminderTime: isValidTime(elements.profileReminderTime.value) ? elements.profileReminderTime.value : "09:00",
     upiId: cleanString(elements.profileUpiId ? elements.profileUpiId.value : ""),
     ownerWhatsapp: cleanDigits(elements.profileOwnerWhatsapp ? elements.profileOwnerWhatsapp.value : ""),
-    appPin: cleanDigits(appPin),
-    serverUrl: cleanString(serverUrl),
-    serverKey: cleanString(serverKey),
     githubToken: state.profile.githubToken,
     githubGistId: state.profile.githubGistId,
     brandLogoDataUrl: nextLogoDataUrl,
@@ -2125,7 +2110,6 @@ async function handleProfileSave(event) {
     requestAdminKey: state.profile.requestAdminKey
   };
   ensureProfileAccessKeys();
-  if (urlChanged || keyChanged) showToast("Sync settings updated.");
   ui.pendingProfileLogoDataUrl = null;
   receiptLogoPdfPromise = null;
   
@@ -4337,22 +4321,8 @@ async function writeToLocalDb(key, value) {
 let isAutoSyncing = false;
 
 async function getServerSyncConfig() {
-  const url = state?.profile?.serverUrl;
-  const key = state?.profile?.serverKey;
-  if (url && key) return { url, key };
-
-  const db = await getDb();
-  const localValue = await new Promise((resolve) => {
-    const transaction = db.transaction(DB_STORE, "readonly");
-    const request = transaction.objectStore(DB_STORE).get(DB_KEY);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => resolve(null);
-  });
-  
-  const stateObj = localValue && localValue.state ? localValue.state : localValue;
-  const profile = stateObj && stateObj.profile ? stateObj.profile : {};
-  if (profile.serverUrl && profile.serverKey) {
-    return { url: profile.serverUrl, key: profile.serverKey };
+  if (SYNC_URL && SYNC_KEY) {
+    return { url: SYNC_URL, key: SYNC_KEY };
   }
   return null;
 }
@@ -4364,7 +4334,18 @@ async function autoSync() {
 
   isAutoSyncing = true;
   try {
-    await readFromDb(DB_KEY);
+    const saved = await readFromDb(DB_KEY);
+    const newTs = saved && saved._timestamp ? saved._timestamp : 0;
+    
+    if (newTs > currentDbTimestamp) {
+      currentDbTimestamp = newTs;
+      const source = saved && saved.state ? saved.state : saved;
+      state = normalizeState(source || createDefaultState());
+      
+      populateProfileForm();
+      renderAll();
+      showToast("Data auto-synced from server!");
+    }
   } catch (error) {
     console.error("Auto sync failed", error);
   } finally {
@@ -4380,7 +4361,17 @@ async function forceManualSync(event) {
   }
   
   try {
-    const config = await getServerSyncConfig();
+    let config = await getServerSyncConfig();
+    
+    // Fallback to UI inputs if not saved yet
+    if (!config && elements.profileServerUrl && elements.profileServerUrl.value) {
+      const u = cleanString(elements.profileServerUrl.value);
+      const k = cleanString(elements.profileServerKey ? elements.profileServerKey.value : "");
+      if (u && k) {
+        config = { url: u, key: k };
+      }
+    }
+
     if (!config) {
       showToast("Server Sync is not configured. Add URL and Key in Setup.");
       return;
@@ -4403,10 +4394,13 @@ async function forceManualSync(event) {
         const localUrl = config.url;
         const localKey = config.key;
         
-        if (newValue && newValue.state && newValue.state.profile) {
+        if (!newValue) newValue = { state: { profile: {} } };
+        if (newValue.state) {
+          if (!newValue.state.profile) newValue.state.profile = {};
           newValue.state.profile.serverUrl = localUrl;
           newValue.state.profile.serverKey = localKey;
-        } else if (newValue && newValue.profile) {
+        } else {
+          if (!newValue.profile) newValue.profile = {};
           newValue.profile.serverUrl = localUrl;
           newValue.profile.serverKey = localKey;
         }
@@ -4467,10 +4461,13 @@ async function readFromDb(key) {
                 const localKey = config.key;
                 
                 localValue = cloudData.value;
-                if (localValue && localValue.state && localValue.state.profile) {
+                if (!localValue) localValue = { state: { profile: {} } };
+                if (localValue.state) {
+                  if (!localValue.state.profile) localValue.state.profile = {};
                   localValue.state.profile.serverUrl = localUrl;
                   localValue.state.profile.serverKey = localKey;
-                } else if (localValue && localValue.profile) {
+                } else {
+                  if (!localValue.profile) localValue.profile = {};
                   localValue.profile.serverUrl = localUrl;
                   localValue.profile.serverKey = localKey;
                 }
