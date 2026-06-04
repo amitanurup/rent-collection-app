@@ -57,7 +57,10 @@ async function initPortalPage(payload) {
   unlockForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const entered = cleanDigits(unlockInput.value);
-    if (!entered || entered !== model.mobile) {
+    const enteredCore = entered.length >= 10 ? entered.slice(-10) : entered;
+    const modelCore = model.mobile && model.mobile.length >= 10 ? model.mobile.slice(-10) : model.mobile;
+
+    if (!enteredCore || enteredCore !== modelCore) {
       unlockError.hidden = false;
       unlockError.textContent = "This mobile number does not match the saved tenant record.";
       return;
