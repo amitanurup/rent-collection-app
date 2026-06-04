@@ -3498,31 +3498,18 @@ async function registerServiceWorker() {
     return;
   }
 
-  if (!isHostedRuntime()) {
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(registrations.map((registration) => registration.unregister()));
-
-      if ("caches" in window) {
-        const cacheKeys = await caches.keys();
-        await Promise.all(
-          cacheKeys
-            .filter((key) => /^rent-collection/i.test(key))
-            .map((key) => caches.delete(key))
-        );
-      }
-    } catch (error) {
-      console.error(error);
-    }
-    return;
-  }
-
   try {
-    await navigator.serviceWorker.register("rent-collection-sw.js?v=20260525-intake-backend-fix-8", {
-      updateViaCache: "none"
-    });
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+
+    if ("caches" in window) {
+      const cacheKeys = await caches.keys();
+      await Promise.all(
+        cacheKeys.map((key) => caches.delete(key))
+      );
+    }
   } catch (error) {
-    console.error(error);
+    console.error("Error clearing service worker:", error);
   }
 }
 
