@@ -76,16 +76,13 @@ async function init() {
   await loadState();
 
   syncLocalPinFromState();
-  await loadDriveBackupState();
   ui.activeTab = getInitialTab();
   ensureSelectedTenant();
   populateProfileForm();
   renderAll();
   switchTab(ui.activeTab, { scroll: false, syncHash: false });
   syncMobileNavState();
-  if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-    autoSync();
-  }
+  autoSync();
   setInterval(autoSync, 15000);
   scrollToInitialHashTarget();
   registerInstallPrompt();
@@ -97,9 +94,10 @@ async function init() {
 
   window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
-          }
+      autoSync();
+    }
   });
-  }
+}
 
 
 
@@ -267,8 +265,9 @@ function bindEvents() {
   if (elements.pinForm) {
     elements.pinForm.addEventListener("submit", verifyPin);
   }
-  if (elements.lockAppBtn) {
-    elements.lockAppBtn.addEventListener("click", handleLockApp);
+  const loadDataBtn = document.getElementById("loadDataBtn");
+  if (loadDataBtn) {
+    loadDataBtn.addEventListener("click", forceLoadFromServer);
   }
     
   elements.profileForm.addEventListener("submit", handleProfileSave);
@@ -437,13 +436,67 @@ function verifyPin(event) {
     writeStorageValue(window.sessionStorage, "app_unlocked", "true");
     checkLocalPin();
     // Force a data download upon successful login
-    autoSync();
+    forceLoadFromServer();
     return;
   }
 
   setElementDisplay(pinError, "block");
   if (pinInput) {
     pinInput.value = "";
+  }
+}
+
+async function forceLoadFromServer() {
+  const syncBtn = document.getElementById("loadDataBtn");
+  if (syncBtn) {
+    syncBtn.disabled = true;
+    syncBtn.style.opacity = "0.5";
+  }
+  try {
+    const config = await getServerSyncConfig();
+    if (!config) {
+      showToast("Server config not found.");
+      return;
+    }
+    const response = await fetch(config.url + "?t=" + Date.now(), {
+      method: "GET",
+      headers: {
+        "X-Secret-Key": config.key,
+        "Accept": "application/json"
+      }
+    });
+    if (response.ok) {
+      const cloudData = await response.json();
+      if (cloudData && cloudData.value) {
+        let localValue = cloudData.value;
+        if (!localValue) localValue = { state: { profile: {} } };
+        if (localValue.state) {
+          if (!localValue.state.profile) localValue.state.profile = {};
+          localValue.state.profile.serverUrl = config.url;
+          localValue.state.profile.serverKey = config.key;
+        }
+        localValue._timestamp = cloudData._timestamp || Date.now();
+        await writeToLocalDb(DB_KEY, localValue);
+        currentDbTimestamp = localValue._timestamp;
+        const source = localValue.state ? localValue.state : localValue;
+        state = normalizeState(source || createDefaultState());
+        populateProfileForm();
+        renderAll();
+        showToast("Data loaded from server!");
+      } else {
+        showToast("Server returned empty data.");
+      }
+    } else {
+      showToast("Server error: " + response.status);
+    }
+  } catch (e) {
+    console.error("Force load error:", e);
+    showToast("Failed to load: " + e.message);
+  } finally {
+    if (syncBtn) {
+      syncBtn.disabled = false;
+      syncBtn.style.opacity = "1";
+    }
   }
 }
 
