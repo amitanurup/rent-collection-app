@@ -3008,7 +3008,10 @@ async function getShortLink(longUrl) {
   try {
     const res = await fetch(SYNC_URL + "?action=shorten", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Secret-Key": SYNC_KEY
+      },
       body: JSON.stringify({ url: longUrl })
     });
     const data = await res.json();

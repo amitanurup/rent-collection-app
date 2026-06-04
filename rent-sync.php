@@ -50,23 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit();
 }
 
-// POST Request: Upload Data
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $json_data = file_get_contents('php://input');
-    
-    // Validate JSON
-    $decoded = json_decode($json_data, true);
-    if (json_last_error() === JSON_ERROR_NONE && isset($decoded['value'])) {
-        // Save to file
-        file_put_contents($DATA_FILE, $json_data);
-        echo json_encode(["success" => true, "message" => "Data saved successfully!"]);
-    } else {
-        http_response_code(400);
-        echo json_encode(["error" => "Invalid JSON payload"]);
-    }
-    exit();
-}
-
 // POST Request: Shorten URL
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'shorten') {
     $json_data = file_get_contents('php://input');
@@ -81,6 +64,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     }
     http_response_code(400);
     echo json_encode(["error" => "Failed to shorten url"]);
+    exit();
+}
+
+// POST Request: Upload Data
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $json_data = file_get_contents('php://input');
+    
+    // Validate JSON
+    $decoded = json_decode($json_data, true);
+    if (json_last_error() === JSON_ERROR_NONE && isset($decoded['value'])) {
+        // Save to file
+        file_put_contents($DATA_FILE, $json_data);
+        echo json_encode(["success" => true, "message" => "Data saved successfully!"]);
+    } else {
+        http_response_code(400);
+        echo json_encode(["error" => "Invalid JSON payload"]);
+    }
     exit();
 }
 
