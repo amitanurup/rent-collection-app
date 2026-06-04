@@ -10,7 +10,7 @@ const MAX_DOCUMENT_SIZE = 4 * 1024 * 1024;
 const AUTO_BACKUP_DELAY_MS = 1200;
 const APP_TABS = ["overview", "tenants", "collections", "reminders", "settings"];
 const PUBLIC_SITE_FALLBACK_URL = "https://krishna-residency-rent.netlify.app";
-const REQUESTS_FUNCTION_PATH = "/.netlify/functions/tenant-requests";
+
 const BRAND_LOGO_WEB_PATH = "assets/branding/krishna-residency-logo.png";
 const RECEIPT_LOGO_PDF_PATH = "assets/branding/krishna-residency-logo-receipt.jpg";
 const SECTION_TAB_MAP = {
@@ -183,10 +183,10 @@ function cacheElements() {
     captureAadhaarBtn: document.getElementById("captureAadhaarBtn"),
     aadhaarFileHint: document.getElementById("aadhaarFileHint"),
     existingDocumentHint: document.getElementById("existingDocumentHint"),
-    tenantRequestDraftNote: document.getElementById("tenantRequestDraftNote"),
-    tenantRequestList: document.getElementById("tenantRequestList"),
+    
+    
     tenantRequestsNote: document.getElementById("tenantRequestsNote"),
-    refreshTenantRequestsBtn: document.getElementById("refreshTenantRequestsBtn"),
+    
     resetTenantFormBtn: document.getElementById("resetTenantFormBtn"),
     scrollToCollectionBtn: document.getElementById("scrollToCollectionBtn"),
     paymentForm: document.getElementById("paymentForm"),
@@ -230,9 +230,9 @@ function cacheElements() {
     tenantPortalNote: document.getElementById("tenantPortalNote"),
     copyTenantPortalLinkBtn: document.getElementById("copyTenantPortalLinkBtn"),
     shareTenantPortalWhatsappBtn: document.getElementById("shareTenantPortalWhatsappBtn"),
-    tenantIntakeNote: document.getElementById("tenantIntakeNote"),
-    copyTenantIntakeLinkBtn: document.getElementById("copyTenantIntakeLinkBtn"),
-    openTenantIntakeLinkBtn: document.getElementById("openTenantIntakeLinkBtn"),
+    
+    
+    
     deleteSavedPaymentBtn: document.getElementById("deleteSavedPaymentBtn"),
     paymentSubmitBtn: document.getElementById("paymentSubmitBtn"),
     resetPaymentFormBtn: document.getElementById("resetPaymentFormBtn"),
@@ -2858,37 +2858,13 @@ function buildTenantPortalPayload(tenant, snapshot) {
   };
 }
 
-function buildTenantIntakePayload() {
-  const inboxId = cleanString(state.profile.requestInboxId);
-  if (!inboxId) {
-    return null;
-  }
 
-  return {
-    v: 1,
-    t: "intake",
-    ca: new Date().toISOString(),
-    pp: {
-      p: state.profile.propertyName || "Krishna Residency",
-      o: state.profile.ownerName || "Owner",
-      c: state.profile.city || "",
-      i: inboxId
-    }
-  };
-}
 
 function buildTenantPortalLink(tenant, snapshot) {
   return buildShareUrl("tenant-portal.html", buildTenantPortalPayload(tenant, snapshot));
 }
 
-function buildTenantIntakeLink() {
-  const payload = buildTenantIntakePayload();
-  if (!payload) {
-    return "";
-  }
 
-  return buildShareUrl("tenant-intake.html", payload);
-}
 
 function buildPaymentRequestContext(tenant, snapshot) {
   const amountDue = Math.max(0, roundMoney(snapshot.outstanding));
@@ -2980,14 +2956,7 @@ function buildTenantPortalShareMessage(context) {
   return lines.join("\n");
 }
 
-function buildTenantIntakeShareMessage(link) {
-  return [
-    `Hello,`,
-    `Please open this ${state.profile.propertyName || "Krishna Residency"} tenant details link and fill your move-in information.`,
-    `After submitting the form, your details will go directly to the owner dashboard for review.`,
-    `Intake link: ${link}`
-  ].join("\n");
-}
+
 
 function openWhatsappShare(message, phone = "") {
   const normalizedPhone = phone ? normalizeWhatsappNumber(phone) : "";
@@ -3030,23 +2999,7 @@ function renderTenantPortalPanel() {
   elements.shareTenantPortalWhatsappBtn.disabled = false;
 }
 
-function renderTenantIntakePanel() {
-  if (!elements.tenantIntakeNote || !elements.copyTenantIntakeLinkBtn || !elements.openTenantIntakeLinkBtn) {
-    return;
-  }
 
-  if (!cleanString(state.profile.requestInboxId)) {
-    elements.tenantIntakeNote.textContent = "Save setup once to activate the intake form link.";
-    elements.copyTenantIntakeLinkBtn.disabled = true;
-    elements.openTenantIntakeLinkBtn.disabled = true;
-    return;
-  }
-
-  elements.tenantIntakeNote.textContent =
-    "Copy this link and send it to the tenant. New requests will arrive in the inbox below, including Aadhaar photo capture.";
-  elements.copyTenantIntakeLinkBtn.disabled = false;
-  elements.openTenantIntakeLinkBtn.disabled = false;
-}
 
 function renderLogoPreview() {
   if (!elements.profileLogoPreview) {
@@ -3058,252 +3011,23 @@ function renderLogoPreview() {
   elements.profileLogoPreview.alt = `${propertyName} logo preview`;
 }
 
-function renderTenantRequestDraftNote() {
-  if (!elements.tenantRequestDraftNote) {
-    return;
-  }
 
-  if (!ui.pendingTenantRequestId) {
-    elements.tenantRequestDraftNote.textContent = "";
-    return;
-  }
 
-  elements.tenantRequestDraftNote.textContent = `Request loaded from ${ui.pendingTenantRequestName || "tenant intake"}. Add room details and save the tenant to finish.`;
-}
 
-function renderTenantRequestList() {
-  if (!elements.tenantRequestList || !elements.tenantRequestsNote) {
-    return;
-  }
 
-  if (ui.tenantRequestsLoading && !ui.tenantRequests.length) {
-    elements.tenantRequestsNote.textContent = "Checking for new tenant intake requests...";
-    elements.tenantRequestList.innerHTML = createEmptyState("Loading requests", "Please wait while the inbox is refreshing.");
-    return;
-  }
 
-  if (ui.tenantRequestsError) {
-    elements.tenantRequestsNote.textContent = ui.tenantRequestsError;
-  } else if (ui.tenantRequests.length) {
-    elements.tenantRequestsNote.textContent = `${ui.tenantRequests.length} pending request${ui.tenantRequests.length === 1 ? "" : "s"} ready for review.`;
-  } else {
-    elements.tenantRequestsNote.textContent = "Tenant requests will appear here after a tenant submits the intake form.";
-  }
 
-  if (!ui.tenantRequests.length) {
-    elements.tenantRequestList.innerHTML = createEmptyState(
-      "No pending request",
-      "Share the intake form link with a tenant and new requests will appear here."
-    );
-    return;
-  }
 
-  elements.tenantRequestList.innerHTML = ui.tenantRequests
-    .map((request) => {
-      const hasPhoto = Boolean(request.aadhaarDocument && request.aadhaarDocument.dataUrl);
-      const photoMarkup = hasPhoto
-        ? `
-          <div class="tenant-request-photo">
-            <div class="tenant-request-photo-frame">
-              <img src="${escapeHtml(request.aadhaarDocument.dataUrl)}" alt="Aadhaar preview for ${escapeHtml(request.fullName)}" />
-            </div>
-            <p class="tenant-request-photo-note">${escapeHtml(request.aadhaarDocument.name)}</p>
-          </div>`
-        : "";
-      const createdLabel = formatDateTimeLabel(request.createdAt);
-      return `
-        <article class="tenant-request-card">
-          <div class="tenant-request-topline">
-            <div class="tenant-request-name">
-              <strong>${escapeHtml(request.fullName || "New tenant request")}</strong>
-              <p>Submitted ${escapeHtml(createdLabel)}</p>
-            </div>
-            <div class="tenant-request-badges">
-              <span class="tag">${escapeHtml(formatMobileForCard(request.mobile) || "No mobile")}</span>
-              <span class="tag" data-tone="warm">${escapeHtml(formatDateLabel(request.moveInDate))}</span>
-            </div>
-          </div>
 
-          <div class="tenant-request-grid">
-            <div class="tenant-request-copy">
-              <div class="tenant-request-stats">
-                <span class="tag">Members ${escapeHtml(String(request.totalMembers || 0))}</span>
-                <span class="tag">${escapeHtml(request.aadhaarNumber ? `Aadhaar ${maskAadhaarNumber(request.aadhaarNumber)}` : "Aadhaar not added")}</span>
-              </div>
-              <p><strong>Address:</strong> ${escapeHtml(request.address || "Not provided")}</p>
-              <p><strong>Notes:</strong> ${escapeHtml(request.notes || "No notes")}</p>
-            </div>
-            ${photoMarkup}
-          </div>
 
-          <div class="tenant-request-actions">
-            <button class="mini-button" data-request-action="accept" data-request-id="${escapeHtml(request.id)}" type="button">Accept To Form</button>
-            <button class="mini-button" data-request-action="dismiss" data-request-id="${escapeHtml(request.id)}" data-tone="danger" type="button">Dismiss</button>
-            ${
-              hasPhoto
-                ? `<a class="mini-button" href="${escapeHtml(request.aadhaarDocument.dataUrl)}" target="_blank" rel="noopener">Open Photo</a>`
-                : ""
-            }
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-}
 
-async function refreshTenantRequests({ manual = false } = {}) {
-  if (!cleanString(state.profile.requestInboxId) || !cleanString(state.profile.requestAdminKey)) {
-    ui.tenantRequests = [];
-    ui.tenantRequestsError = "Save setup once to activate the request inbox.";
-    renderTenantRequestList();
-    return false;
-  }
 
-  ui.tenantRequestsLoading = true;
-  if (!manual) {
-    ui.tenantRequestsError = "";
-  }
-  renderTenantRequestList();
 
-  try {
-    const response = await requestTenantService({
-      action: "list_requests",
-      inboxId: state.profile.requestInboxId,
-      adminKey: state.profile.requestAdminKey
-    });
-    ui.tenantRequests = Array.isArray(response.requests) ? response.requests.map(normalizeTenantRequest) : [];
-    ui.tenantRequests.sort((left, right) => String(right.createdAt).localeCompare(String(left.createdAt)));
-    ui.tenantRequestsError = "";
-    if (manual) {
-      showToast("Tenant requests were refreshed.");
-    }
-    return true;
-  } catch (error) {
-    console.error(error);
-    ui.tenantRequestsError = "The request inbox could not be refreshed right now.";
-    if (manual) {
-      showToast("The request inbox could not be refreshed.");
-    }
-    return false;
-  } finally {
-    ui.tenantRequestsLoading = false;
-    renderTenantRequestList();
-  }
-}
 
-function handleTenantRequestListClick(event) {
-  const button = event.target.closest("[data-request-action]");
-  if (!button) {
-    return;
-  }
 
-  const request = ui.tenantRequests.find((item) => item.id === cleanString(button.dataset.requestId));
-  if (!request) {
-    return;
-  }
 
-  if (button.dataset.requestAction === "accept") {
-    acceptTenantRequestToForm(request);
-    return;
-  }
 
-  if (button.dataset.requestAction === "dismiss") {
-    dismissTenantRequest(request);
-  }
-}
 
-function acceptTenantRequestToForm(request) {
-  elements.tenantForm.reset();
-  elements.tenantId.value = "";
-  elements.tenantName.value = request.fullName;
-  elements.tenantMobile.value = request.mobile;
-  if (elements.tenantTotalMembers) {
-    elements.tenantTotalMembers.value = request.totalMembers || "";
-  }
-  if (elements.tenantAadhaarNumber) {
-    elements.tenantAadhaarNumber.value = request.aadhaarNumber || "";
-  }
-  elements.tenantRoomNumber.value = "";
-  elements.tenantFloor.value = "";
-  elements.tenantStartDate.value = request.moveInDate || getTodayIso();
-  elements.tenantDueDay.value = state.profile.defaultDueDay;
-  elements.tenantMonthlyRent.value = "";
-  elements.tenantWaterBill.value = "";
-  elements.tenantAdvancePaid.value = "";
-  elements.tenantAddress.value = request.address || "";
-  elements.tenantNotes.value = request.notes || "";
-  elements.tenantAadhaarFile.value = "";
-  if (elements.tenantAadhaarCapture) {
-    elements.tenantAadhaarCapture.value = "";
-  }
-  ui.pendingImportedAadhaarDocument = request.aadhaarDocument || null;
-  ui.pendingTenantRequestId = request.id;
-  ui.pendingTenantRequestName = request.fullName || "tenant intake";
-  renderTenantRequestDraftNote();
-  updateAadhaarHint();
-  switchTab("tenants", { scroll: false });
-  scrollToSection("tenantEntry");
-  showToast("Tenant request loaded. Add room details and save the tenant.");
-}
-
-async function dismissTenantRequest(request) {
-  const confirmDelete = await openConfirmDialog({
-    title: "Dismiss tenant request",
-    body: `Remove the pending request from ${request.fullName || "this tenant"}?`,
-    confirmText: "Dismiss Request",
-    cancelText: "Keep Request",
-    tone: "danger"
-  });
-
-  if (!confirmDelete) {
-    return;
-  }
-
-  const removed = await removeTenantRequestFromInbox(request.id);
-  if (removed) {
-    showToast("The tenant request was removed.");
-  }
-}
-
-async function removeTenantRequestFromInbox(requestId) {
-  try {
-    await requestTenantService({
-      action: "remove_request",
-      inboxId: state.profile.requestInboxId,
-      adminKey: state.profile.requestAdminKey,
-      requestId
-    });
-    ui.tenantRequests = ui.tenantRequests.filter((item) => item.id !== requestId);
-    if (ui.pendingTenantRequestId === requestId) {
-      clearPendingTenantRequestDraft();
-    }
-    renderTenantRequestList();
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-}
-
-async function completePendingTenantRequestAfterSave() {
-  if (!ui.pendingTenantRequestId) {
-    return;
-  }
-
-  const requestId = ui.pendingTenantRequestId;
-  clearPendingTenantRequestDraft();
-  const removed = await removeTenantRequestFromInbox(requestId);
-  if (!removed) {
-    showToast("Tenant saved, but the request is still in the inbox. You can dismiss it manually.");
-  }
-}
-
-function clearPendingTenantRequestDraft() {
-  ui.pendingImportedAadhaarDocument = null;
-  ui.pendingTenantRequestId = "";
-  ui.pendingTenantRequestName = "";
-  renderTenantRequestDraftNote();
-}
 
 async function handleProfileLogoSelection(event) {
   const file = event.target.files && event.target.files[0];
@@ -3352,32 +3076,7 @@ function getBrandLogoSrc() {
   return state.profile.brandLogoDataUrl || BRAND_LOGO_WEB_PATH;
 }
 
-async function syncPublicProfile({ silent = false } = {}) {
-  if (!cleanString(state.profile.requestInboxId) || !cleanString(state.profile.requestAdminKey)) {
-    return false;
-  }
 
-  try {
-    await requestTenantService({
-      action: "upsert_profile",
-      inboxId: state.profile.requestInboxId,
-      adminKey: state.profile.requestAdminKey,
-      profile: {
-        propertyName: state.profile.propertyName || "Krishna Residency",
-        ownerName: state.profile.ownerName || "Owner",
-        city: state.profile.city || "",
-        logoDataUrl: state.profile.brandLogoDataUrl || ""
-      }
-    });
-    return true;
-  } catch (error) {
-    console.error(error);
-    if (!silent) {
-      showToast("Public logo sync failed. The local setup is still saved.");
-    }
-    return false;
-  }
-}
 
 async function copyTenantPortalLink() {
   const context = getActiveCollectionPaymentRequestContext();
@@ -3410,26 +3109,9 @@ function shareTenantPortalWhatsapp() {
   openWhatsappShare(buildTenantPortalShareMessage(context), context.tenant.mobile);
 }
 
-async function copyTenantIntakeLink() {
-  const link = buildTenantIntakeLink();
-  if (!link) {
-    showToast("Save setup first.");
-    return;
-  }
 
-  await copyText(link);
-  showToast("The tenant intake link was copied.");
-}
 
-function openTenantIntakeLink() {
-  const link = buildTenantIntakeLink();
-  if (!link) {
-    showToast("Save setup first.");
-    return;
-  }
 
-  window.open(link, "_blank", "noopener");
-}
 
 function openWhatsAppReminder(tenant, monthKey = currentMonthKey(), snapshotOverride = null) {
   if (!tenant.mobile) {
@@ -4691,20 +4373,7 @@ async function fileToDocument(file) {
   };
 }
 
-function normalizeTenantRequest(source) {
-  return {
-    id: cleanString(source.id) || makeId("request"),
-    fullName: cleanString(source.fullName),
-    mobile: cleanDigits(source.mobile),
-    moveInDate: isValidDate(source.moveInDate) ? source.moveInDate : getTodayIso(),
-    totalMembers: toWholeNumber(source.totalMembers),
-    aadhaarNumber: cleanDigits(source.aadhaarNumber).slice(0, 12),
-    address: cleanString(source.address),
-    notes: cleanString(source.notes),
-    aadhaarDocument: normalizeDocument(source.aadhaarDocument),
-    createdAt: isValidDateTime(source.createdAt) ? source.createdAt : new Date().toISOString()
-  };
-}
+
 
 function ensureProfileAccessKeys() {
   let changed = false;
@@ -4754,20 +4423,7 @@ function formatDateTimeLabel(value) {
   });
 }
 
-async function requestTenantService(payload) {
-  const response = await fetch(`${getServiceBaseUrl()}${REQUESTS_FUNCTION_PATH}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.ok) {
-    throw new Error(cleanString(data.error) || "Request service unavailable");
-  }
-  return data;
-}
+
 
 async function imageFileToSquareDataUrl(file, size = 320, quality = 0.92) {
   const dataUrl = await readFileAsDataUrl(file);
@@ -5024,3 +4680,5 @@ function getDb() {
 
   return dbPromise;
 }
+
+

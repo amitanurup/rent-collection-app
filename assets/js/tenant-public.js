@@ -1,5 +1,4 @@
 const PUBLIC_SITE_FALLBACK_URL = "https://krishna-residency-rent.netlify.app";
-const REQUESTS_FUNCTION_PATH = "/.netlify/functions/tenant-requests";
 const PUBLIC_DOCUMENT_SIZE_LIMIT = 4 * 1024 * 1024;
 
 const publicMoneyFormatter = new Intl.NumberFormat("en-IN", {
@@ -490,20 +489,6 @@ function readFileAsDataUrl(file) {
   });
 }
 
-async function requestTenantService(payload) {
-  const response = await fetch(`${getServiceBaseUrl()}${REQUESTS_FUNCTION_PATH}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.ok) {
-    throw new Error(cleanString(data.error) || "Request service unavailable");
-  }
-  return data;
-}
 
 function getServiceBaseUrl() {
   const origin = window.location.origin || "";
