@@ -2279,10 +2279,7 @@ async function handleProfileSave(event) {
   );
 
   if (tokenChanged || gistChanged) {
-    await writeToLocalDb(DB_KEY, state);
-    showToast("Sync setup saved. Fetching data...");
-    setTimeout(() => location.reload(), 1500);
-    return;
+    showToast("Sync settings updated.");
   }
 
   await persistState();
@@ -4875,10 +4872,13 @@ async function readFromDb(key) {
           if (gist.files && gist.files[filename]) {
             const cloudData = JSON.parse(gist.files[filename].content);
             if (!localValue || !localValue._timestamp || (cloudData._timestamp && cloudData._timestamp > localValue._timestamp)) {
-              const localToken = localValue?.profile?.githubToken;
-              const localGistId = localValue?.profile?.githubGistId;
+              const localToken = localValue?.state?.profile?.githubToken || localValue?.profile?.githubToken;
+              const localGistId = localValue?.state?.profile?.githubGistId || localValue?.profile?.githubGistId;
               localValue = cloudData.value;
-              if (localValue && localValue.profile) {
+              if (localValue && localValue.state && localValue.state.profile) {
+                if (localToken) localValue.state.profile.githubToken = localToken;
+                if (localGistId) localValue.state.profile.githubGistId = localGistId;
+              } else if (localValue && localValue.profile) {
                 if (localToken) localValue.profile.githubToken = localToken;
                 if (localGistId) localValue.profile.githubGistId = localGistId;
               }
@@ -4892,7 +4892,10 @@ async function readFromDb(key) {
             }
             // Strip secrets from cloud data to avoid GitHub Secret Scanner revoking tokens!
             let safeState = JSON.parse(JSON.stringify(localValue));
-            if (safeState && safeState.profile) {
+            if (safeState && safeState.state && safeState.state.profile) {
+              delete safeState.state.profile.githubToken;
+              delete safeState.state.profile.githubGistId;
+            } else if (safeState && safeState.profile) {
               delete safeState.profile.githubToken;
               delete safeState.profile.githubGistId;
             }
@@ -4940,7 +4943,10 @@ async function writeToDb(key, value) {
     try {
       const filename = `${key}.json`;
       let safeState = JSON.parse(JSON.stringify(value));
-      if (safeState && safeState.profile) {
+      if (safeState && safeState.state && safeState.state.profile) {
+        delete safeState.state.profile.githubToken;
+        delete safeState.state.profile.githubGistId;
+      } else if (safeState && safeState.profile) {
         delete safeState.profile.githubToken;
         delete safeState.profile.githubGistId;
       }
