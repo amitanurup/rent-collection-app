@@ -3064,7 +3064,7 @@ async function shareTenantPortalWhatsapp() {
 
 
 
-function openWhatsAppReminder(tenant, monthKey = currentMonthKey(), snapshotOverride = null) {
+async function openWhatsAppReminder(tenant, monthKey = currentMonthKey(), snapshotOverride = null) {
   if (!tenant.mobile) {
     showToast("No mobile number is saved for this tenant.");
     return;
@@ -3082,6 +3082,11 @@ function openWhatsAppReminder(tenant, monthKey = currentMonthKey(), snapshotOver
     showToast("No pending amount is left for this month.");
     return;
   }
+
+  showToast("Generating short links...");
+  if (context.upiLink) context.upiLink = await getShortLink(context.upiLink);
+  if (context.qrUrl) context.qrUrl = await getShortLink(context.qrUrl);
+  if (context.portalLink) context.portalLink = await getShortLink(context.portalLink);
 
   const message = buildPaymentRequestMessage(context);
   openWhatsappShare(message, tenant.mobile);

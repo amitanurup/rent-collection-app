@@ -259,22 +259,23 @@ function renderPortal(model) {
       portalPaymentNote.textContent = `Pay ${formatMoney(model.outstanding)} directly by UPI with the button if the QR image does not load.`;
     };
     portalQrImage.src = qrUrl;
-    portalPayNowBtn.disabled = false;
-    portalPayNowBtn.onclick = () => {
-      window.location.href = upiLink;
-    };
+    portalPayNowBtn.href = upiLink;
+    portalPayNowBtn.classList.remove("disabled");
+    portalPayNowBtn.style.pointerEvents = "auto";
   } else if (!model.upiId) {
     portalPaymentNote.textContent = "The owner has not added a UPI ID yet. Please contact the owner for payment details.";
-    portalQrImage.hidden = true;
-    portalQrImage.removeAttribute("src");
     portalQrEmpty.hidden = false;
-    portalPayNowBtn.disabled = true;
+    portalPayNowBtn.removeAttribute("href");
+    portalPayNowBtn.classList.add("disabled");
+    portalPayNowBtn.style.pointerEvents = "none";
   } else {
     portalPaymentNote.textContent = "This bill is already marked paid in the current record.";
     portalQrImage.hidden = true;
     portalQrImage.removeAttribute("src");
     portalQrEmpty.hidden = false;
-    portalPayNowBtn.disabled = true;
+    portalPayNowBtn.removeAttribute("href");
+    portalPayNowBtn.classList.add("disabled");
+    portalPayNowBtn.style.pointerEvents = "none";
   }
 
   if (model.ownerWhatsapp) {
