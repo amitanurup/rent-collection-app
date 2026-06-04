@@ -2773,6 +2773,7 @@ function buildTenantPortalPayload(tenant, snapshot) {
       eb: toMoney(snapshot.electricityBill),
       wb: toMoney(snapshot.waterBill),
       oc: toMoney(snapshot.otherCharge),
+      ds: toMoney(snapshot.discount),
       au: toMoney(snapshot.advanceUsed),
       pa: toMoney(snapshot.paidAmount),
       tt: toMoney(snapshot.total),
@@ -2845,6 +2846,10 @@ function buildPaymentRequestMessage(context) {
 
   if (usageDetails) {
     lines.splice(4, 0, `${usageDetails.label}: ${usageDetails.value}`);
+  }
+
+  if (context.snapshot.discount > 0) {
+    lines.splice(lines.length - 3, 0, `Discount applied: ${formatMoney(context.snapshot.discount)}`);
   }
 
   if (context.upiId) {
