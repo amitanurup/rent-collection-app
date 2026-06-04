@@ -367,12 +367,7 @@ function bindEvents() {
   if (elements.shareTenantPortalWhatsappBtn) {
     elements.shareTenantPortalWhatsappBtn.addEventListener("click", shareTenantPortalWhatsapp);
   }
-  if (elements.copyTenantIntakeLinkBtn) {
-    elements.copyTenantIntakeLinkBtn.addEventListener("click", copyTenantIntakeLink);
-  }
-  if (elements.openTenantIntakeLinkBtn) {
-    elements.openTenantIntakeLinkBtn.addEventListener("click", openTenantIntakeLink);
-  }
+
   
   if (elements.downloadDataBtn) {
     elements.downloadDataBtn.addEventListener("click", forceManualSync);
@@ -905,7 +900,6 @@ function renderAll() {
   renderReceiptPanel();
   renderPaymentRequestPanel();
   renderTenantPortalPanel();
-  renderTenantIntakePanel();
   renderDriveBackupPanel();
 }
 
