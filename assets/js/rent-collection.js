@@ -4480,8 +4480,8 @@ async function readFromDb(key) {
           if (gist.files && gist.files[filename]) {
             const cloudData = JSON.parse(gist.files[filename].content);
             if (!localValue || !localValue._timestamp || (cloudData._timestamp && cloudData._timestamp > localValue._timestamp)) {
-              const localToken = localValue?.state?.profile?.githubToken || localValue?.profile?.githubToken;
-              const localGistId = localValue?.state?.profile?.githubGistId || localValue?.profile?.githubGistId;
+              const localToken = config.token;
+              const localGistId = config.gistId;
               localValue = cloudData.value;
               if (localValue && localValue.state && localValue.state.profile) {
                 if (localToken) localValue.state.profile.githubToken = localToken;
@@ -4571,7 +4571,7 @@ async function writeToDb(key, value) {
             [filename]: {
               content: JSON.stringify({
                 value: safeState,
-                _timestamp: Date.now()
+                _timestamp: value._timestamp
               })
             }
           }
