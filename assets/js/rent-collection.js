@@ -4517,28 +4517,6 @@ async function deleteFromDb(key) {
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);
   });
-  
-  const config = await getGithubSyncConfig();
-  if (config) {
-    try {
-      const filename = `${key}.json`;
-      await fetch(`https://api.github.com/gists/${config.gistId}`, {
-        method: "PATCH",
-        headers: {
-          "Authorization": `token ${config.token}`,
-          "Accept": "application/vnd.github.v3+json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          files: {
-            [filename]: null
-          }
-        })
-      });
-    } catch (e) {
-      console.error("Blob delete error:", e);
-    }
-  }
 }
 
 function getDb() {
