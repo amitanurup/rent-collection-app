@@ -43,12 +43,9 @@ const ui = {
   activeReceiptContext: null,
   installPrompt: null,
   toastTimer: null,
-  tenantRequests: [],
-  tenantRequestsLoading: false,
-  tenantRequestsError: "",
+
   pendingImportedAadhaarDocument: null,
-  pendingTenantRequestId: "",
-  pendingTenantRequestName: "",
+
   pendingProfileLogoDataUrl: null
 };
 
@@ -88,8 +85,6 @@ async function init() {
   checkLocalPin();
 
   maybeSendDueNotifications();
-  await syncPublicProfile({ silent: true });
-  await refreshTenantRequests({ manual: false });
 
   window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
@@ -185,7 +180,7 @@ function cacheElements() {
     existingDocumentHint: document.getElementById("existingDocumentHint"),
     
     
-    tenantRequestsNote: document.getElementById("tenantRequestsNote"),
+    
     
     resetTenantFormBtn: document.getElementById("resetTenantFormBtn"),
     scrollToCollectionBtn: document.getElementById("scrollToCollectionBtn"),
@@ -388,9 +383,7 @@ function bindEvents() {
   if (elements.tenantDetail) {
     elements.tenantDetail.addEventListener("click", handleTenantDetailClick);
   }
-  if (elements.tenantRequestList) {
-    elements.tenantRequestList.addEventListener("click", handleTenantRequestListClick);
-  }
+  
   if (elements.enableNotificationsBtn) {
     elements.enableNotificationsBtn.addEventListener("click", requestNotificationPermission);
   }
@@ -420,11 +413,7 @@ function bindEvents() {
   if (elements.openTenantIntakeLinkBtn) {
     elements.openTenantIntakeLinkBtn.addEventListener("click", openTenantIntakeLink);
   }
-  if (elements.refreshTenantRequestsBtn) {
-    elements.refreshTenantRequestsBtn.addEventListener("click", () => {
-      refreshTenantRequests({ manual: true });
-    });
-  }
+  
   if (elements.deleteSavedPaymentBtn) {
     elements.deleteSavedPaymentBtn.addEventListener("click", deleteCurrentSavedPayment);
   }
@@ -991,8 +980,7 @@ function renderAll() {
   renderTenantDetail();
   renderFilterChips();
   renderTenantDocumentHint();
-  renderTenantRequestDraftNote();
-  renderTenantRequestList();
+
   hydratePaymentForm(true);
   renderReceiptPanel();
   renderPaymentRequestPanel();
@@ -2284,7 +2272,7 @@ async function handleProfileSave(event) {
 
   await persistState();
   renderAll();
-  await syncPublicProfile({ silent: true });
+
   showToast("Setup was saved.");
 }
 
@@ -2338,7 +2326,7 @@ async function handleTenantSave(event) {
   ui.selectedTenantId = tenant.id;
 
   await persistState();
-  await completePendingTenantRequestAfterSave();
+
   resetTenantForm();
   renderAll();
   showToast(existing ? "Tenant record was updated." : "A new tenant was saved.");
@@ -2445,7 +2433,7 @@ function resetTenantForm() {
   if (elements.tenantAadhaarCapture) {
     elements.tenantAadhaarCapture.value = "";
   }
-  clearPendingTenantRequestDraft();
+
   updateAadhaarHint();
 }
 
@@ -2472,7 +2460,7 @@ function fillTenantForm(tenant) {
   if (elements.tenantAadhaarCapture) {
     elements.tenantAadhaarCapture.value = "";
   }
-  clearPendingTenantRequestDraft();
+
   renderTenantDocumentHint();
 }
 
@@ -3235,8 +3223,7 @@ async function importStateFile(event) {
     resetTenantForm();
     populateProfileForm();
     renderAll();
-    await syncPublicProfile({ silent: true });
-    await refreshTenantRequests({ manual: false });
+
     showToast("Backup import completed.");
   } catch (error) {
     console.error(error);
@@ -3266,8 +3253,7 @@ async function loadDemoData() {
   resetTenantForm();
   populateProfileForm();
   renderAll();
-  await syncPublicProfile({ silent: true });
-  await refreshTenantRequests({ manual: false });
+
   showToast("Demo data was loaded.");
 }
 
@@ -3291,8 +3277,7 @@ async function clearAllData() {
   resetTenantForm();
   populateProfileForm();
   renderAll();
-  await syncPublicProfile({ silent: true });
-  await refreshTenantRequests({ manual: false });
+
   showToast("All data was cleared.");
 }
 
