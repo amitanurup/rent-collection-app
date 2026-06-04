@@ -1,11 +1,15 @@
-{"level":"info","ts":1780348274.609401,"msg":"maxprocs: Leaving GOMAXPROCS=16: CPU quota undefined"}
-{"level":"info","ts":1780348274.6099162,"msg":"GOMEMLIMIT is updated","GOMEMLIMIT":14606600601,"previous":9223372036854775807}
-{"level":"info","ts":1780348274.6099162,"msg":"using config from file","file":"C:\\Users\\amita\\Documents\\New project\\rent-collection-app\\Caddyfile"}
-{"level":"info","ts":1780348274.6099162,"msg":"adapted config to JSON","adapter":"caddyfile"}
-{"level":"warn","ts":1780348274.6099162,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"C:\\Users\\amita\\Documents\\New project\\rent-collection-app\\Caddyfile","line":2}
-{"level":"warn","ts":1780348274.6104422,"logger":"admin","msg":"admin endpoint disabled"}
-{"level":"info","ts":1780348274.6104422,"logger":"tls.cache.maintenance","msg":"started background certificate maintenance","cache":"0x30503a189400"}
-{"level":"info","ts":1780348274.6104422,"logger":"http.auto_https","msg":"automatic HTTPS is completely disabled for server","server_name":"srv0"}
-{"level":"info","ts":1780348274.6120074,"logger":"http","msg":"servers shutting down with eternal grace period"}
-{"level":"info","ts":1780348274.6120074,"logger":"tls.cache.maintenance","msg":"stopped background certificate maintenance","cache":"0x30503a189400"}
-Error: loading initial config: loading new config: http app module: start: listening on :8091: listen tcp :8091: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+{"level":"info","ts":1780595123.1006134,"msg":"maxprocs: Leaving GOMAXPROCS=16: CPU quota undefined"}
+{"level":"info","ts":1780595123.101137,"msg":"GOMEMLIMIT is updated","GOMEMLIMIT":14606604288,"previous":9223372036854775807}
+{"level":"info","ts":1780595123.101137,"msg":"using config from file","file":"C:\\Users\\amita\\Documents\\New project\\rent-collection-app\\Caddyfile"}
+{"level":"info","ts":1780595123.101137,"msg":"adapted config to JSON","adapter":"caddyfile"}
+{"level":"warn","ts":1780595123.101137,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"C:\\Users\\amita\\Documents\\New project\\rent-collection-app\\Caddyfile","line":2}
+{"level":"warn","ts":1780595123.101137,"logger":"admin","msg":"admin endpoint disabled"}
+{"level":"info","ts":1780595123.1016593,"logger":"tls.cache.maintenance","msg":"started background certificate maintenance","cache":"0x2282bcad8900"}
+{"level":"info","ts":1780595123.1016593,"logger":"http.auto_https","msg":"automatic HTTPS is completely disabled for server","server_name":"srv0"}
+{"level":"warn","ts":1780595123.1027284,"logger":"http","msg":"HTTP/2 skipped because it requires TLS","network":"tcp","addr":":8091"}
+{"level":"warn","ts":1780595123.1027284,"logger":"http","msg":"HTTP/3 skipped because it requires TLS","network":"tcp","addr":":8091"}
+{"level":"info","ts":1780595123.1027284,"logger":"http.log","msg":"server running","name":"srv0","protocols":["h1","h2","h3"]}
+{"level":"info","ts":1780595123.103247,"msg":"autosaved config (load with --resume flag)","file":"C:\\Users\\amita\\AppData\\Roaming\\Caddy\\autosave.json"}
+{"level":"info","ts":1780595123.1037688,"msg":"serving initial configuration"}
+{"level":"info","ts":1780595123.112803,"logger":"tls","msg":"cleaning storage unit","storage":"FileStorage:C:\\Users\\amita\\AppData\\Roaming\\Caddy"}
+{"level":"info","ts":1780595123.1148877,"logger":"tls","msg":"finished cleaning storage units"}

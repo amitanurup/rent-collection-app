@@ -8,3 +8,4 @@ netlify-dist/
 node_modules/
 _apk-toolchain/
 apk-wrapper/build/
+.env

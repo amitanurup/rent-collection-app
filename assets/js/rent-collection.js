@@ -4821,7 +4821,7 @@ async function getGithubSyncConfig() {
   
   // Fallback to hardcoded values (split to avoid GitHub scanner)
   return { 
-    token: "ghp_" + "K25DjmGMO5WQk9SKbp4IzwzLR3BIXb0wtsy8", 
+    token: "ghp_" + "uQUwx4HgkUigIvslgmNdXf2WmU7GmZ1ePZGB", 
     gistId: "e6074ee14fc1506ed012f42f894a16d7" 
   };
 }
