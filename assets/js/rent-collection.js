@@ -69,7 +69,7 @@ async function init() {
   checkLocalPin();
   bindEvents();
   await loadState();
-  checkSyncHash();
+
   syncLocalPinFromState();
   await loadDriveBackupState();
   ui.activeTab = getInitialTab();
@@ -94,47 +94,7 @@ async function init() {
   setInterval(autoSync, 15000);
 }
 
-function checkSyncHash() {
-  const hash = window.location.hash;
-  if (hash.startsWith("#sync=")) {
-    try {
-      const params = new URLSearchParams(hash.substring(1));
-      const token = params.get("sync");
-      const gist = params.get("gist");
-      if (token && gist) {
-        state.profile.githubToken = token;
-        state.profile.githubGistId = gist;
-        // Save token locally first without pushing to cloud
-        writeToLocalDb(DB_KEY, state);
-        showToast("App permanently connected! Fetching data...");
-        window.history.replaceState(null, null, window.location.pathname);
-        // Force a fetch from the newly connected cloud
-        setTimeout(() => location.reload(), 1500);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-}
 
-async function handleCopySyncLink() {
-  const token = state.profile.githubToken || elements.profileGithubToken.value.trim() || ("ghp_" + "K25DjmGMO5WQk9SKbp4IzwzLR3BIXb0wtsy8");
-  const gistId = state.profile.githubGistId || elements.profileGithubGistId.value.trim() || "e6074ee14fc1506ed012f42f894a16d7";
-  
-  if (!token || !gistId) {
-    showToast("Setup GitHub token and Gist ID first.");
-    return;
-  }
-  
-  const link = window.location.origin + window.location.pathname + "#sync=" + encodeURIComponent(token) + "&gist=" + encodeURIComponent(gistId);
-  try {
-    await navigator.clipboard.writeText(link);
-    showToast("Auto-Sync Link Copied! Share it via WhatsApp.");
-  } catch (err) {
-    console.error("Failed to copy", err);
-    showToast("Error copying link.");
-  }
-}
 
 function cacheElements() {
   elements = {
@@ -157,7 +117,7 @@ function cacheElements() {
     profileAppPin: document.getElementById("profileAppPin"),
     profileGithubToken: document.getElementById("profileGithubToken"),
     profileGithubGistId: document.getElementById("profileGithubGistId"),
-    copySyncLinkBtn: document.getElementById("copySyncLinkBtn"),
+
     tenantForm: document.getElementById("tenantForm"),
     tenantId: document.getElementById("tenantId"),
     tenantName: document.getElementById("tenantName"),
@@ -310,9 +270,7 @@ function bindEvents() {
   if (elements.downloadDataBtn) {
     elements.downloadDataBtn.addEventListener("click", forceManualSync);
   }
-  if (elements.copySyncLinkBtn) {
-    elements.copySyncLinkBtn.addEventListener("click", handleCopySyncLink);
-  }
+  
   elements.profileForm.addEventListener("submit", handleProfileSave);
   elements.tenantForm.addEventListener("submit", handleTenantSave);
   elements.paymentForm.addEventListener("submit", handlePaymentSave);
