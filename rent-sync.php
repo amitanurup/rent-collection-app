@@ -67,6 +67,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
+// POST Request: Shorten URL
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'shorten') {
+    $json_data = file_get_contents('php://input');
+    $decoded = json_decode($json_data, true);
+    if (isset($decoded['url'])) {
+        $longUrl = $decoded['url'];
+        $shortUrl = @file_get_contents("https://tinyurl.com/api-create.php?url=" . urlencode($longUrl));
+        if ($shortUrl) {
+            echo json_encode(["shortUrl" => $shortUrl]);
+            exit();
+        }
+    }
+    http_response_code(400);
+    echo json_encode(["error" => "Failed to shorten url"]);
+    exit();
+}
+
 // If not GET or POST
 http_response_code(405);
 echo json_encode(["error" => "Method Not Allowed"]);

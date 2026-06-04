@@ -159,7 +159,9 @@ function cacheElements() {
     collectionElectricityRate: document.getElementById("collectionElectricityRate"),
     collectionElectricityBill: document.getElementById("collectionElectricityBill"),
     collectionWaterBill: document.getElementById("collectionWaterBill"),
+    collectionExcludeWater: document.getElementById("collectionExcludeWater"),
     collectionOtherCharge: document.getElementById("collectionOtherCharge"),
+    collectionDiscount: document.getElementById("collectionDiscount"),
     collectionAdvanceUsed: document.getElementById("collectionAdvanceUsed"),
     collectionFullPaid: document.getElementById("collectionFullPaid"),
     collectionCalculatedTotal: document.getElementById("collectionCalculatedTotal"),
@@ -294,14 +296,22 @@ function bindEvents() {
     field.addEventListener("input", updateElectricityCalculation)
   );
   elements.collectionFullPaid.addEventListener("change", updatePaymentPreview);
+  if (elements.collectionExcludeWater) {
+    elements.collectionExcludeWater.addEventListener("change", () => {
+      elements.collectionWaterBill.disabled = elements.collectionExcludeWater.checked;
+      if (elements.collectionExcludeWater.checked) elements.collectionWaterBill.value = "";
+      updatePaymentPreview();
+    });
+  }
   [
     elements.collectionRentAmount,
     elements.collectionElectricityBill,
     elements.collectionWaterBill,
     elements.collectionOtherCharge,
+    elements.collectionDiscount,
     elements.collectionAdvanceUsed,
     elements.collectionPaidAmount
-  ].forEach((field) => field.addEventListener("input", updatePaymentPreview));
+  ].forEach((field) => { if(field) field.addEventListener("input", updatePaymentPreview); });
   elements.collectionPaymentMode.addEventListener("change", updatePaymentPreview);
   elements.tenantAadhaarFile.addEventListener("change", () => handleAadhaarInputChange("upload"));
   if (elements.tenantAadhaarCapture) {
@@ -857,7 +867,9 @@ function normalizePayment(source) {
     electricityRate,
     electricityBill: toMoney(source.electricityBill || calculatedElectricityBill),
     waterBill: toMoney(source.waterBill),
+    excludeWater: Boolean(source.excludeWater),
     otherCharge: toMoney(source.otherCharge),
+    discount: toMoney(source.discount),
     advanceUsed: toMoney(source.advanceUsed),
     paidAmount: toMoney(source.paidAmount),
     paymentDate: isValidDate(source.paymentDate) ? source.paymentDate : "",
@@ -1371,8 +1383,14 @@ function hydratePaymentForm(keepManualMonth = true) {
   elements.collectionElectricityUnits.value = record && record.electricityUnits ? record.electricityUnits : "";
   elements.collectionElectricityRate.value = record && record.electricityRate ? record.electricityRate : "";
   elements.collectionElectricityBill.value = record ? record.electricityBill : "";
+  if (elements.collectionExcludeWater) {
+    elements.collectionExcludeWater.checked = record ? Boolean(record.excludeWater) : false;
+    elements.collectionWaterBill.disabled = elements.collectionExcludeWater.checked;
+  }
   elements.collectionWaterBill.value = record ? record.waterBill : tenant.defaultWaterBill || "";
+  if (elements.collectionExcludeWater && elements.collectionExcludeWater.checked) elements.collectionWaterBill.value = "";
   elements.collectionOtherCharge.value = record ? record.otherCharge : "";
+  if (elements.collectionDiscount) elements.collectionDiscount.value = record ? record.discount : "";
   elements.collectionAdvanceUsed.value = record ? record.advanceUsed : "";
   elements.collectionPaidAmount.value = record ? record.paidAmount : "";
   elements.collectionFullPaid.checked = Boolean(recordSummary && recordSummary.total > 0 && recordSummary.outstanding === 0);
@@ -1399,6 +1417,7 @@ function resetPaymentFieldsOnly() {
     elements.collectionElectricityBill,
     elements.collectionWaterBill,
     elements.collectionOtherCharge,
+    elements.collectionDiscount,
     elements.collectionAdvanceUsed,
     elements.collectionPaidAmount,
     elements.collectionPaymentDate,
@@ -1410,12 +1429,16 @@ function resetPaymentFieldsOnly() {
     });
   elements.collectionPaymentMode.value = "cash";
   elements.collectionFullPaid.checked = false;
+  if (elements.collectionExcludeWater) {
+    elements.collectionExcludeWater.checked = false;
+    elements.collectionWaterBill.disabled = false;
+  }
   setFullPaidMode(false);
 }
 
 function updatePaymentPreview() {
   const values = getPaymentFormValues();
-  const total = roundMoney(values.rentAmount + values.electricityBill + values.waterBill + values.otherCharge - values.advanceUsed);
+  const total = roundMoney(values.rentAmount + values.electricityBill + values.waterBill + values.otherCharge - values.advanceUsed - values.discount);
   const safeTotal = Math.max(0, total);
   elements.collectionCalculatedTotal.value = formatMoney(safeTotal);
 
@@ -1462,7 +1485,9 @@ function getPaymentFormValues() {
     electricityRate: toMoney(elements.collectionElectricityRate.value),
     electricityBill: toMoney(elements.collectionElectricityBill.value),
     waterBill: toMoney(elements.collectionWaterBill.value),
+    excludeWater: elements.collectionExcludeWater ? elements.collectionExcludeWater.checked : false,
     otherCharge: toMoney(elements.collectionOtherCharge.value),
+    discount: elements.collectionDiscount ? toMoney(elements.collectionDiscount.value) : 0,
     advanceUsed: toMoney(elements.collectionAdvanceUsed.value),
     paidAmount: toMoney(elements.collectionPaidAmount.value)
   };
@@ -2262,8 +2287,10 @@ async function handlePaymentSave(event) {
     electricityUnits: elements.collectionElectricityUnits.value,
     electricityRate: elements.collectionElectricityRate.value,
     electricityBill: elements.collectionElectricityBill.value,
-    waterBill: elements.collectionWaterBill.value || tenant.defaultWaterBill,
+    waterBill: elements.collectionExcludeWater && elements.collectionExcludeWater.checked ? 0 : (elements.collectionWaterBill.value || tenant.defaultWaterBill),
+    excludeWater: elements.collectionExcludeWater && elements.collectionExcludeWater.checked,
     otherCharge: elements.collectionOtherCharge.value,
+    discount: elements.collectionDiscount ? elements.collectionDiscount.value : 0,
     advanceUsed: elements.collectionAdvanceUsed.value,
     paidAmount: elements.collectionPaidAmount.value,
     paymentDate: elements.collectionPaymentDate.value,
@@ -2425,7 +2452,7 @@ function getTenantOutstandingTotal(tenant) {
 
 function getPaymentSummary(payment) {
   const total = roundMoney(
-    payment.rentAmount + payment.electricityBill + payment.waterBill + payment.otherCharge - payment.advanceUsed
+    payment.rentAmount + payment.electricityBill + payment.waterBill + payment.otherCharge - payment.advanceUsed - (payment.discount || 0)
   );
   const safeTotal = Math.max(0, total);
   const paidAmount = Math.max(0, toMoney(payment.paidAmount));
@@ -2607,9 +2634,10 @@ function buildDraftCollectionSnapshot(tenant, monthKey = currentMonthKey()) {
   const electricityBill = toMoney(elements.collectionElectricityBill.value);
   const waterBill = toMoney(elements.collectionWaterBill.value || tenant.defaultWaterBill);
   const otherCharge = toMoney(elements.collectionOtherCharge.value);
+  const discount = elements.collectionDiscount ? toMoney(elements.collectionDiscount.value) : 0;
   const advanceUsed = toMoney(elements.collectionAdvanceUsed.value);
   const paidAmount = toMoney(elements.collectionPaidAmount.value);
-  const total = Math.max(0, roundMoney(rentAmount + electricityBill + waterBill + otherCharge - advanceUsed));
+  const total = Math.max(0, roundMoney(rentAmount + electricityBill + waterBill + otherCharge - advanceUsed - discount));
   const outstanding = Math.max(0, roundMoney(total - paidAmount));
 
   return {
@@ -2622,6 +2650,7 @@ function buildDraftCollectionSnapshot(tenant, monthKey = currentMonthKey()) {
     electricityBill,
     waterBill,
     otherCharge,
+    discount,
     advanceUsed,
     paidAmount,
     total,
@@ -2975,6 +3004,23 @@ function getBrandLogoSrc() {
 
 
 
+async function getShortLink(longUrl) {
+  try {
+    const res = await fetch(SYNC_URL + "?action=shorten", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: longUrl })
+    });
+    const data = await res.json();
+    if (data && data.shortUrl) {
+      return data.shortUrl;
+    }
+  } catch (err) {
+    console.error("Shortlink error:", err);
+  }
+  return longUrl;
+}
+
 async function copyTenantPortalLink() {
   const context = getActiveCollectionPaymentRequestContext();
   if (!context) {
@@ -2987,11 +3033,13 @@ async function copyTenantPortalLink() {
     return;
   }
 
-  await copyText(context.portalLink);
+  showToast("Generating short link...");
+  const shortLink = await getShortLink(context.portalLink);
+  await copyText(shortLink);
   showToast("The tenant portal link was copied.");
 }
 
-function shareTenantPortalWhatsapp() {
+async function shareTenantPortalWhatsapp() {
   const context = getActiveCollectionPaymentRequestContext();
   if (!context) {
     showToast("Select a tenant first.");
@@ -3003,6 +3051,9 @@ function shareTenantPortalWhatsapp() {
     return;
   }
 
+  showToast("Generating short link...");
+  const shortLink = await getShortLink(context.portalLink);
+  context.portalLink = shortLink;
   openWhatsappShare(buildTenantPortalShareMessage(context), context.tenant.mobile);
 }
 
