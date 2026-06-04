@@ -916,7 +916,7 @@ function populateProfileForm() {
     elements.profileAppPin.value = state.profile.appPin || "";
   }
   if (elements.profileGithubToken) {
-    elements.profileGithubToken.value = state.profile.githubToken || ("ghp_" + "K25DjmGMO5WQk9SKbp4IzwzLR3BIXb0wtsy8");
+    elements.profileGithubToken.value = state.profile.githubToken || "";
   }
   if (elements.profileGithubGistId) {
     elements.profileGithubGistId.value = state.profile.githubGistId || "e6074ee14fc1506ed012f42f894a16d7";
@@ -4438,11 +4438,7 @@ async function getGithubSyncConfig() {
     return { token: profile.githubToken, gistId: profile.githubGistId };
   }
   
-  // Fallback to hardcoded values (split to avoid GitHub scanner)
-  return { 
-    token: "ghp_" + "uQUwx4HgkUigIvslgmNdXf2WmU7GmZ1ePZGB", 
-    gistId: "e6074ee14fc1506ed012f42f894a16d7" 
-  };
+  return null;
 }
 
 async function readFromDb(key) {
