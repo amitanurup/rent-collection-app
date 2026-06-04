@@ -82,7 +82,10 @@ async function init() {
   renderAll();
   switchTab(ui.activeTab, { scroll: false, syncHash: false });
   syncMobileNavState();
-  autoSync();
+
+  // Always load fresh data from server on every page load
+  await forceLoadFromServer();
+
   setInterval(autoSync, 15000);
   scrollToInitialHashTarget();
   registerInstallPrompt();
@@ -94,7 +97,7 @@ async function init() {
 
   window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
-      autoSync();
+      forceLoadFromServer();
     }
   });
 }
