@@ -760,9 +760,22 @@ async function forceManualSync(event) {
       if (gist.files && gist.files[filename]) {
         const cloudData = JSON.parse(gist.files[filename].content);
         if (cloudData && cloudData.value) {
+          // Preserve local token and gist ID
+          const localToken = config.token;
+          const localGistId = config.gistId;
+          
+          let newValue = cloudData.value;
+          if (newValue && newValue.state && newValue.state.profile) {
+            if (localToken) newValue.state.profile.githubToken = localToken;
+            if (localGistId) newValue.state.profile.githubGistId = localGistId;
+          } else if (newValue && newValue.profile) {
+            if (localToken) newValue.profile.githubToken = localToken;
+            if (localGistId) newValue.profile.githubGistId = localGistId;
+          }
+          
           // Force overwrite local DB with cloud data
-          cloudData.value._timestamp = Date.now();
-          await writeToLocalDb(DB_KEY, cloudData.value);
+          newValue._timestamp = Date.now();
+          await writeToLocalDb(DB_KEY, newValue);
           console.log("Forced gist sync completed.");
         }
       }
