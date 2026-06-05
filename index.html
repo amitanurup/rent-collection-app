@@ -752,6 +752,10 @@
           <button class="modal-close" type="button" onclick="document.getElementById('intakeModal').hidden = true;">Close</button>
         </div>
         <div class="receipt-modal-body" style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+          <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+             <button class="button button-accent" style="flex: 1; padding: 8px; font-size: 0.95rem;" onclick="copyIntakeLink()">Copy Application Link</button>
+             <button class="button button-ghost" style="flex: 1; padding: 8px; font-size: 0.95rem;" onclick="shareIntakeWhatsapp()">Share on WhatsApp</button>
+          </div>
           <div id="intakeList" style="display: grid; gap: 16px;"></div>
           <div id="intakeEmpty" style="text-align: center; color: #6b7280; padding: 40px 0;">No pending requests.</div>
         </div>

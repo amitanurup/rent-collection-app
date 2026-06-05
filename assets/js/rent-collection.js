@@ -4843,3 +4843,28 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(fetchIntakes, 60000); // Check every minute
 });
 
+
+function getIntakeLink() {
+  const syncUrl = localStorage.getItem("app_sync_url");
+  if (syncUrl) {
+    try {
+      const urlObj = new URL(syncUrl);
+      urlObj.pathname = urlObj.pathname.replace('rent-sync.php', 'tenant-intake.html');
+      return urlObj.href;
+    } catch(e) {}
+  }
+  return window.location.origin + window.location.pathname.replace('index.html', '') + "tenant-intake.html";
+}
+
+async function copyIntakeLink() {
+  const link = getIntakeLink();
+  await copyText(`Hello! Please fill out this application form to rent a room: \n${link}`);
+  showToast("Application link copied to clipboard!");
+}
+
+async function shareIntakeWhatsapp() {
+  const link = getIntakeLink();
+  const msg = encodeURIComponent(`Hello! Please fill out this application form to rent a room:\n\n${link}`);
+  window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+}
+
