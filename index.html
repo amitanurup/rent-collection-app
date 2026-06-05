@@ -754,9 +754,9 @@
         </div>
         <div class="receipt-modal-body" id="receiptModalContent"></div>
         <div class="app-modal-actions receipt-modal-actions">
-          <button class="button button-ghost" id="receiptModalSecondaryBtn" type="button">Close</button>
-          <button class="button button-ghost" id="receiptModalPrintBtn" type="button">Print / Save PDF</button>
-          <button class="button button-accent" id="receiptModalShareBtn" type="button">Share PDF Receipt</button>
+          <button class="button button-ghost" id="receiptModalSecondaryBtn" type="button" onclick="closeReceiptModal()">Close</button>
+          <button class="button button-ghost" id="receiptModalPrintBtn" type="button" onclick="printReceiptModal()">Print / Save PDF</button>
+          <button class="button button-accent" id="receiptModalShareBtn" type="button" onclick="shareActiveReceiptPdf()">Share PDF Receipt</button>
         </div>
       </div>
     </div>

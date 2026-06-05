@@ -4085,3 +4085,9 @@ body {
 
 .receipt-modal-actions .button { z-index: 99 !important; position: relative !important; pointer-events: auto !important; }
 
+
+/* Fix mobile modal scrolling and button clickability */
+.receipt-modal-card { display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+.receipt-modal-body { overflow-y: auto !important; flex-grow: 1; padding-bottom: 20px; }
+.receipt-modal-actions { margin-top: auto !important; flex-shrink: 0; padding-top: 10px; z-index: 999 !important; position: relative !important; pointer-events: auto !important; }
+
