@@ -2148,6 +2148,11 @@ async function runAction(action, tenantId, monthKey) {
     if (!confirmDelete) {
       return;
     }
+    const pwd = prompt("Please enter the Owner Password to confirm deletion:");
+    if (pwd !== APP_PASSWORD) {
+      showToast("Incorrect password. Deletion cancelled.");
+      return;
+    }
 
     tenant.aadhaarDocument = null;
     await persistState();
@@ -2168,13 +2173,10 @@ async function runAction(action, tenantId, monthKey) {
       return;
     }
 
-    const storedPin = localStorage.getItem("local_app_pin");
-    if (storedPin) {
-      const enteredPin = prompt("Please enter your app password to confirm deletion:");
-      if (enteredPin !== storedPin) {
-        showToast("Incorrect password. Tenant deletion cancelled.");
-        return;
-      }
+    const pwd = prompt("Please enter the Owner Password to confirm deletion:");
+    if (pwd !== APP_PASSWORD) {
+      showToast("Incorrect password. Deletion cancelled.");
+      return;
     }
 
     state.tenants = state.tenants.filter((item) => item.id !== tenant.id);
@@ -3265,6 +3267,11 @@ async function clearAllData() {
   if (!shouldClear) {
     return;
   }
+  const pwd = prompt("Please enter the Owner Password to confirm deletion:");
+  if (pwd !== APP_PASSWORD) {
+    showToast("Incorrect password. Deletion cancelled.");
+    return;
+  }
 
   state = createDefaultState();
   ensureProfileAccessKeys();
@@ -3343,6 +3350,12 @@ async function deletePaymentRecord(tenant, monthKey) {
     tone: "danger"
   });
   if (!shouldDelete) {
+    return;
+  }
+
+  const pwd = prompt("Please enter the Owner Password to confirm deletion:");
+  if (pwd !== APP_PASSWORD) {
+    showToast("Incorrect password. Deletion cancelled.");
     return;
   }
 
@@ -4860,4 +4873,5 @@ async function shareIntakeWhatsapp() {
   const msg = encodeURIComponent(`Hello! Please fill out this application form to rent a room:\n\n${link}`);
   window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
 }
+
 

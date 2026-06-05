@@ -12,45 +12,85 @@
     <link rel="manifest" href="rent-collection.webmanifest" />
     <link rel="icon" href="assets/icons/rent-collection-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/icons/rent-collection-icon.svg" />
-    <link rel="stylesheet" href="assets/css/rent-collection.css?v=20260606-v4" />
+    <link rel="stylesheet" href="assets/css/rent-collection.css?v=20260606-v5" />
     <script>
       window.APP_VERSION = "20260602-lock-flow-5";
     </script>
-    <script defer src="assets/js/rent-collection.js?v=20260606-v4"></script>
+    <script defer src="assets/js/rent-collection.js?v=20260606-v5"></script>
   </head>
   <body>
     <style>
       #pinOverlay {
-        position: fixed;
-        inset: 0;
-        background: #0d1218;
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(-45deg, #0f151b, #1a232f, #0d1e30, #0f151b);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
         z-index: 10000;
-        display: none;
-        align-items: center;
-        justify-content: center;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
         padding: 20px;
       }
-      .pin-card {
-        background: #1a232f;
-        padding: 32px;
-        border-radius: 16px;
-        width: 100%;
-        max-width: 320px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
       }
-      .pin-card h2 { color: #fff; margin-top: 0; text-align: center; margin-bottom: 24px; }
-      .pin-field input { width: 100%; background: #0d1218; border: 1px solid #2a3b4c; padding: 12px; border-radius: 8px; color: #fff; font-size: 1.2rem; text-align: center; letter-spacing: 4px; margin-bottom: 16px; }
-      .pin-button { width: 100%; background: #06b6d4; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; color:#000; }
-      .pin-error { color: #ef4444; font-size: 0.85rem; text-align: center; margin-bottom: 12px; display: none; }
+      .pin-card {
+        background: rgba(26, 35, 47, 0.65);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 40px 32px;
+        border-radius: 24px;
+        width: 100%;
+        max-width: 360px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        text-align: center;
+      }
+      .pin-card h2 {
+        color: #fff; margin-top: 0; margin-bottom: 8px; font-weight: 700; font-size: 1.5rem; letter-spacing: 1px;
+      }
+      .pin-card p.subtitle {
+        color: #94a3b8; font-size: 0.9rem; margin-bottom: 30px;
+      }
+      .pin-field input {
+        width: 100%; background: rgba(13, 18, 24, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 16px; border-radius: 12px; color: #fff;
+        font-size: 1.1rem; text-align: center; letter-spacing: 2px;
+        margin-bottom: 24px; transition: all 0.3s ease;
+      }
+      .pin-field input:focus {
+        outline: none; border-color: #06b6d4; box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+      }
+      .pin-button {
+        width: 100%; background: linear-gradient(135deg, #06b6d4, #3b82f6);
+        border: none; padding: 16px; border-radius: 12px;
+        font-weight: 700; font-size: 1rem; cursor: pointer; color:#fff;
+        text-transform: uppercase; letter-spacing: 1px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+      }
+      .pin-button:hover {
+        transform: translateY(-2px); box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6);
+      }
+      .pin-error {
+        color: #ef4444; font-size: 0.9rem; text-align: center; margin-bottom: 16px; display: none; font-weight: 500;
+        background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 8px;
+      }
+      .pin-logo {
+        width: 80px; height: 80px; margin-bottom: 20px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.5); object-fit: cover;
+      }
     </style>
     <div id="pinOverlay">
       <form class="pin-card" id="pinForm">
-        <h2>Enter Password</h2>
+        <img src="assets/branding/krishna-residency-logo.png" alt="Logo" class="pin-logo" onerror="this.style.display='none'" />
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Secure Owner Login</p>
         <div class="pin-error" id="pinError">Invalid Password</div>
         <div class="pin-field">
-          <input type="password" id="pinInput" placeholder="Password" required autofocus />
+          <input type="password" id="pinInput" placeholder="Enter Password" required autofocus />
         </div>
-        <button type="submit" class="pin-button">Unlock</button>
+        <button type="submit" class="pin-button">Unlock Workspace</button>
       </form>
     </div>
 
