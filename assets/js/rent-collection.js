@@ -4846,14 +4846,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function getIntakeLink() {
   const syncUrl = localStorage.getItem("app_sync_url");
+  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '') + "tenant-intake.html";
   if (syncUrl) {
-    try {
-      const urlObj = new URL(syncUrl);
-      urlObj.pathname = urlObj.pathname.replace('rent-sync.php', 'tenant-intake.html');
-      return urlObj.href;
-    } catch(e) {}
+    return baseUrl + "?api=" + encodeURIComponent(syncUrl);
   }
-  return window.location.origin + window.location.pathname.replace('index.html', '') + "tenant-intake.html";
+  return baseUrl;
 }
 
 async function copyIntakeLink() {

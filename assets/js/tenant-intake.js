@@ -23,9 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // The rent-sync.php URL should be constructed relative to this page
   // Assuming the structure: https://website.com/tenant-intake.html and https://website.com/rent-sync.php
   const getSyncUrl = () => {
-    // For local dev, hardcode or fallback. In production, it's relative.
-    const url = new URL('rent-sync.php', window.location.href).href;
-    return url;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('api')) {
+      return params.get('api');
+    }
+    return new URL('rent-sync.php', window.location.href).href;
   };
 
   showStatusBtn.addEventListener('click', () => {
