@@ -663,7 +663,6 @@
                 <div class="tool-grid">
                   <button class="button button-accent" id="copyDueSummaryBtn" type="button">Copy Due Summary</button>
                   <button class="button button-ghost" id="createOwnerReminderBtn" type="button">Create Phone Reminder</button>
-                  <button class="button button-ghost" id="importDataBtn" type="button">Import Backup</button>
                 </div>
               </section>
             </div>
@@ -861,6 +860,23 @@
           <div class="app-modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
             <button class="button button-ghost" type="button" onclick="closeAcceptIntakeModal(null)">Cancel</button>
             <button class="button button-accent" type="button" onclick="submitAcceptIntakeModal()">Accept</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Aadhaar Viewer Modal -->
+      <div class="app-modal" id="aadhaarViewerModal" hidden aria-hidden="true" style="z-index: 10000;">
+        <div class="app-modal-backdrop" onclick="closeAadhaarViewerModal()"></div>
+        <div class="app-modal-card" role="dialog" aria-modal="true" aria-labelledby="aadhaarViewerModalTitle" style="max-width: 90vw; width: 600px; text-align: center; display: flex; flex-direction: column; max-height: 90vh;">
+          <div class="app-modal-copy" style="flex: 0 0 auto;">
+            <h3 id="aadhaarViewerModalTitle" style="margin-top: 0; margin-bottom: 16px;">View Aadhaar</h3>
+          </div>
+          <div id="aadhaarViewerContent" style="flex: 1 1 auto; overflow: auto; background: #000; border-radius: 8px; margin-bottom: 16px;">
+            <!-- content goes here -->
+          </div>
+          <div class="app-modal-actions" style="display: flex; gap: 10px; justify-content: center; flex: 0 0 auto;">
+            <button class="button button-ghost" type="button" onclick="closeAadhaarViewerModal()">Close</button>
+            <a id="aadhaarDownloadLink" class="button button-accent" href="#" download="aadhaar.pdf" style="text-decoration: none;">Download</a>
           </div>
         </div>
       </div>

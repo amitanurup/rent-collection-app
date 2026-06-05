@@ -1856,8 +1856,7 @@ function renderDocumentCard(tenant) {
       ${preview}
       <p>${escapeHtml(doc.name)} • ${escapeHtml(formatFileSize(doc.size))}</p>
       <div class="tenant-actions">
-        <a class="mini-button" href="${doc.dataUrl}" target="_blank" rel="noopener">Open File</a>
-        <button class="mini-button" data-action="remove-document" data-tenant-id="${escapeHtml(tenant.id)}" data-tone="danger" type="button">Remove</button>
+        <button class="mini-button" onclick="viewAadhaarDocument(event, '${escapeHtml(tenant.id)}')" type="button">View</button>
       </div>
     </div>
   `;
@@ -2134,30 +2133,6 @@ async function runAction(action, tenantId, monthKey) {
 
   if (action === "delete-payment") {
     await deletePaymentRecord(tenant, monthKey);
-    return;
-  }
-
-  if (action === "remove-document") {
-    const confirmDelete = await openConfirmDialog({
-      title: "Remove Aadhaar document",
-      body: "This will remove the saved Aadhaar file from this tenant record.",
-      confirmText: "Remove File",
-      cancelText: "Keep File",
-      tone: "danger"
-    });
-    if (!confirmDelete) {
-      return;
-    }
-    const pwd = await openPasswordDialog("Confirm Deletion", "Please enter the Owner Password to proceed.");
-    if (pwd !== APP_PASSWORD) {
-      showToast("Incorrect password. Deletion cancelled.");
-      return;
-    }
-
-    tenant.aadhaarDocument = null;
-    await persistState();
-    renderAll();
-    showToast("The Aadhaar file was removed.");
     return;
   }
 
@@ -4958,21 +4933,30 @@ window.viewAadhaarDocument = function(event, tenantId) {
     return;
   }
   
-  const newWin = window.open();
-  if (newWin) {
-    newWin.document.write('<html><head><title>Aadhaar - ' + escapeHtml(tenant.fullName) + '</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;background:#000;height:100vh;">');
-    if (tenant.aadhaarDocument.type.startsWith('image/')) {
-       newWin.document.write('<img src="' + tenant.aadhaarDocument.data + '" style="max-width:100%;max-height:100vh;" />');
-    } else if (tenant.aadhaarDocument.type === 'application/pdf') {
-       newWin.document.write('<iframe src="' + tenant.aadhaarDocument.data + '" width="100%" height="100%" style="border: none;"></iframe>');
-    } else {
-       newWin.document.write('<a href="' + tenant.aadhaarDocument.data + '" style="color:white;font-size:24px;">Download Document</a>');
-    }
-    newWin.document.write('</body></html>');
-    newWin.document.close();
+  const modal = document.getElementById("aadhaarViewerModal");
+  const content = document.getElementById("aadhaarViewerContent");
+  const downloadLink = document.getElementById("aadhaarDownloadLink");
+  
+  content.innerHTML = "";
+  if (tenant.aadhaarDocument.type.startsWith('image/')) {
+    content.innerHTML = `<img src="${tenant.aadhaarDocument.data}" style="max-width:100%; max-height:70vh; display:block; margin:0 auto;" />`;
+  } else if (tenant.aadhaarDocument.type === 'application/pdf') {
+    content.innerHTML = `<iframe src="${tenant.aadhaarDocument.data}" width="100%" height="500px" style="border: none;"></iframe>`;
   } else {
-    showToast("Popup blocked! Please allow popups.");
+    content.innerHTML = `<p style="color:white; padding:20px;">Cannot preview this file type.</p>`;
   }
+  
+  downloadLink.href = tenant.aadhaarDocument.data;
+  downloadLink.download = `aadhaar_${tenant.id}.${tenant.aadhaarDocument.type.split('/')[1] || 'bin'}`;
+  
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+};
+
+window.closeAadhaarViewerModal = function() {
+  const modal = document.getElementById("aadhaarViewerModal");
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
 };
 
 window.openAcceptIntakeModal = function() {
