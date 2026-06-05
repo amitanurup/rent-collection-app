@@ -547,7 +547,7 @@ img {
 
 .topbar-copy h2,
 .hero-main h3 {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .summary-grid {
@@ -3962,7 +3962,7 @@ body {
   .brand-copy h1 {
     font-size: 1.2rem;
     line-height: 1.1;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   .home-chip,
