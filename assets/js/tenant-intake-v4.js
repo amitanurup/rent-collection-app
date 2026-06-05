@@ -124,7 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
               if (!upiIdStr) {
                 document.getElementById('upiPayLink').onclick = (e) => {
                   e.preventDefault();
-                  alert("Owner ne abhi tak apna UPI ID set nahi kiya hai.");
+                  document.getElementById('customModalMessage').textContent = "The owner has not set up their UPI payment ID yet. Please contact them directly.";
+                  document.getElementById('customModal').classList.remove('hidden');
                 };
               }
               

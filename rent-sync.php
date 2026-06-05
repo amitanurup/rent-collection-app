@@ -14,6 +14,8 @@ $SECRET_KEY = "Amit@1234";
 $DATA_FILE = "rent-database.json";
 $INTAKES_FILE = "rent-intakes.json";
 
+$SETTINGS_FILE = "rent-settings.json";
+
 // Allow Cross-Origin Requests from the app
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -27,6 +29,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $action = isset($_GET['action']) ? $_GET['action'] : '';
+
+if ($action === 'save_settings' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_SERVER['HTTP_X_SECRET_KEY']) || $_SERVER['HTTP_X_SECRET_KEY'] !== $SECRET_KEY) {
+        http_response_code(401);
+        echo json_encode(["error" => "Unauthorized"]);
+        exit();
+    }
+    
+    $input = file_get_contents('php://input');
+    if ($input) {
+        file_put_contents($SETTINGS_FILE, $input);
+        echo json_encode(["success" => true]);
+    } else {
+        http_response_code(400);
+        echo json_encode(["error" => "Invalid settings data"]);
+    }
+    exit();
+}
 
 // ---------------------------------------------------------
 // UNAUTHENTICATED ROUTES (Public Tenant Intake)
@@ -65,6 +85,10 @@ if ($action === 'check_intake' && $_SERVER['REQUEST_METHOD'] === 'GET') {
         $intakes = file_exists($INTAKES_FILE) ? json_decode(file_get_contents($INTAKES_FILE), true) : [];
         if (!is_array($intakes)) $intakes = [];
         
+        $settings = file_exists($SETTINGS_FILE) ? json_decode(file_get_contents($SETTINGS_FILE), true) : [];
+        if (!is_array($settings)) $settings = [];
+        $globalUpiId = isset($settings['upiId']) ? $settings['upiId'] : "";
+        
         $user_intakes = array_filter($intakes, function($i) use ($mobile) {
             return isset($i['mobile']) && $i['mobile'] === $mobile;
         });
@@ -75,6 +99,9 @@ if ($action === 'check_intake' && $_SERVER['REQUEST_METHOD'] === 'GET') {
             $response = ["found" => true, "status" => $latest['status'], "name" => $latest['name']];
             if (isset($latest['assignedData'])) {
                 $response['assignedData'] = $latest['assignedData'];
+                if (empty($response['assignedData']['upiId']) && !empty($globalUpiId)) {
+                    $response['assignedData']['upiId'] = $globalUpiId;
+                }
             }
             echo json_encode($response);
             exit();

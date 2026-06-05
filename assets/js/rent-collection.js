@@ -2199,8 +2199,24 @@ async function handleProfileSave(event) {
     })
   );
 
-  
   await persistState();
+    
+  // Push global settings to custom server if configured
+  if (state.profile.serverUrl && state.profile.serverKey) {
+    try {
+      await fetch(state.profile.serverUrl + "?action=save_settings", {
+        method: "POST",
+        headers: {
+          "X-Secret-Key": state.profile.serverKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ upiId: state.profile.upiId })
+      });
+    } catch (e) {
+      console.error("Failed to sync settings to custom server", e);
+    }
+  }
+  
   renderAll();
 
   showToast("Setup was saved.");
