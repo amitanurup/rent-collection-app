@@ -366,11 +366,11 @@ function bindEvents() {
   if (elements.exportDataBtn) {
     elements.exportDataBtn.addEventListener("click", exportState);
   }
-  elements.copyDueSummaryBtn.addEventListener("click", copyDueSummary);
-  elements.createOwnerReminderBtn.addEventListener("click", createOwnerReminder);
-  elements.generateReceiptBtn.addEventListener("click", generateCurrentReceipt);
-  elements.sendSmsReceiptBtn.addEventListener("click", sendCurrentSmsReceipt);
-  elements.sendReceiptWhatsappBtn.addEventListener("click", sendCurrentWhatsappReceipt);
+  if (elements.copyDueSummaryBtn) elements.copyDueSummaryBtn.addEventListener("click", copyDueSummary);
+  if (elements.createOwnerReminderBtn) elements.createOwnerReminderBtn.addEventListener("click", createOwnerReminder);
+  if (elements.generateReceiptBtn) elements.generateReceiptBtn.addEventListener("click", generateCurrentReceipt);
+  if (elements.sendSmsReceiptBtn) elements.sendSmsReceiptBtn.addEventListener("click", sendCurrentSmsReceipt);
+  if (elements.sendReceiptWhatsappBtn) elements.sendReceiptWhatsappBtn.addEventListener("click", sendCurrentWhatsappReceipt);
   if (elements.sendPaymentRequestBtn) {
     elements.sendPaymentRequestBtn.addEventListener("click", sendCurrentPaymentRequest);
   }
@@ -397,19 +397,19 @@ function bindEvents() {
   if (elements.disconnectDriveFolderBtn) {
     elements.disconnectDriveFolderBtn.addEventListener("click", disconnectDriveFolder);
   }
-  elements.importDataBtn.addEventListener("click", () => elements.importFileInput.click());
-  elements.importFileInput.addEventListener("change", importStateFile);
-  elements.loadDemoBtn.addEventListener("click", loadDemoData);
-  elements.clearAllBtn.addEventListener("click", clearAllData);
-  elements.appModal.addEventListener("click", handleAppModalClick);
-  elements.appModalCloseBtn.addEventListener("click", () => closeAppModal(false));
-  elements.appModalCancelBtn.addEventListener("click", () => closeAppModal(false));
-  elements.appModalConfirmBtn.addEventListener("click", () => closeAppModal(true));
-  elements.receiptModal.addEventListener("click", handleReceiptModalClick);
-  elements.receiptModalCloseBtn.addEventListener("click", closeReceiptModal);
-  elements.receiptModalSecondaryBtn.addEventListener("click", closeReceiptModal);
-  elements.receiptModalPrintBtn.addEventListener("click", printReceiptModal);
-  elements.receiptModalShareBtn.addEventListener("click", shareActiveReceiptPdf);
+  if (elements.importDataBtn) elements.importDataBtn.addEventListener("click", () => elements.importFileInput.click());
+  if (elements.importFileInput) elements.importFileInput.addEventListener("change", importStateFile);
+  if (elements.loadDemoBtn) elements.loadDemoBtn.addEventListener("click", loadDemoData);
+  if (elements.clearAllBtn) elements.clearAllBtn.addEventListener("click", clearAllData);
+  if (elements.appModal) elements.appModal.addEventListener("click", handleAppModalClick);
+  if (elements.appModalCloseBtn) elements.appModalCloseBtn.addEventListener("click", () => closeAppModal(false));
+  if (elements.appModalCancelBtn) elements.appModalCancelBtn.addEventListener("click", () => closeAppModal(false));
+  if (elements.appModalConfirmBtn) elements.appModalConfirmBtn.addEventListener("click", () => closeAppModal(true));
+  if (elements.receiptModal) elements.receiptModal.addEventListener("click", handleReceiptModalClick);
+  if (elements.receiptModalCloseBtn) elements.receiptModalCloseBtn.addEventListener("click", closeReceiptModal);
+  if (elements.receiptModalSecondaryBtn) elements.receiptModalSecondaryBtn.addEventListener("click", closeReceiptModal);
+  if (elements.receiptModalPrintBtn) elements.receiptModalPrintBtn.addEventListener("click", printReceiptModal);
+  if (elements.receiptModalShareBtn) elements.receiptModalShareBtn.addEventListener("click", shareActiveReceiptPdf);
   window.addEventListener("afterprint", clearReceiptPrintState);
   window.addEventListener("resize", handleViewportChange);
 }
