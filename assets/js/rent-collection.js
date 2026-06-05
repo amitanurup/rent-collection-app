@@ -4784,7 +4784,15 @@ async function acceptIntake(id) {
   const req = intakesList.find(i => i.id === id);
   if (!req) return;
   
-  if (confirm(`Are you sure you want to load the application from ${req.name} into the Add Tenant form?`)) {
+  const confirmLoad = await openConfirmDialog({
+    title: "Accept Application",
+    body: `Are you sure you want to load the application from ${req.name} into the Add Tenant form?`,
+    confirmText: "Accept & Load",
+    cancelText: "Cancel",
+    tone: "accent"
+  });
+  
+  if (confirmLoad) {
     // Mark as accepted on server
     await updateIntakeStatus(id, 'accepted');
     intakesList = intakesList.map(i => i.id === id ? {...i, status: 'accepted'} : i);
