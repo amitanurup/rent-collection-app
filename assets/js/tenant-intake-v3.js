@@ -113,6 +113,21 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('assignedRent').textContent = data.assignedData.rent ? `Rs. ${data.assignedData.rent}` : "-";
             document.getElementById('assignedElec').textContent = data.assignedData.electricity ? `Rs. ${data.assignedData.electricity}` : "-";
             document.getElementById('assignedWater').textContent = data.assignedData.water ? `Rs. ${data.assignedData.water}` : "-";
+            document.getElementById('assignedAdvance').textContent = data.assignedData.advance ? `Rs. ${data.assignedData.advance}` : "-";
+            
+            if (data.assignedData.upiId) {
+              const totalAmount = (parseFloat(data.assignedData.rent || 0) + parseFloat(data.assignedData.advance || 0)).toFixed(2);
+              if (totalAmount > 0) {
+                const upiLink = `upi://pay?pa=${encodeURIComponent(data.assignedData.upiId)}&pn=House%20Rent&am=${totalAmount}&cu=INR&tn=Rent%20Advance`;
+                document.getElementById('upiPayLink').href = upiLink;
+                document.getElementById('upiPaymentSection').classList.remove('hidden');
+              } else {
+                document.getElementById('upiPaymentSection').classList.add('hidden');
+              }
+            } else {
+              document.getElementById('upiPaymentSection').classList.add('hidden');
+            }
+
             assignedDataEl.classList.remove('hidden');
           }
         } else if (data.status === 'rejected') {

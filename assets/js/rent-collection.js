@@ -5010,9 +5010,18 @@ window.submitAcceptIntakeModal = function() {
   const rent = document.getElementById("acceptIntakeRent").value;
   const elec = document.getElementById("acceptIntakeElectricity").value;
   const water = document.getElementById("acceptIntakeWater").value;
+  const advance = document.getElementById("acceptIntakeAdvance").value;
   if (!rent || !elec) {
     showToast("Please enter Rent and Electricity unit charge.");
     return;
   }
-  closeAcceptIntakeModal({ rent, electricity: elec, water });
+  const profileStr = localStorage.getItem("rc_profile");
+  let upiId = "";
+  if (profileStr) {
+    try {
+      const profile = JSON.parse(profileStr);
+      upiId = profile.upiId || "";
+    } catch(e) {}
+  }
+  closeAcceptIntakeModal({ rent, electricity: elec, water, advance, upiId });
 };

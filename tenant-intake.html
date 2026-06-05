@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="assets/css/tenant-public.css" />
-    <script src="assets/js/tenant-intake-v2.js" defer></script>
+    <script src="assets/js/tenant-intake-v3.js" defer></script>
 
     <style>
       .intake-container {
@@ -196,9 +196,17 @@
               <span style="color: #4b5563;">Electricity (per unit)</span>
               <strong id="assignedElec" style="color: #111827;"></strong>
             </div>
-            <div style="display:flex; justify-content:space-between;">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
               <span style="color: #4b5563;">Default Water Bill</span>
               <strong id="assignedWater" style="color: #111827;"></strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom: 12px;">
+              <span style="color: #4b5563;">Advance Rent</span>
+              <strong id="assignedAdvance" style="color: #111827;"></strong>
+            </div>
+            <div id="upiPaymentSection" class="hidden" style="text-align: center; border-top: 1px solid #e5e7eb; padding-top: 12px; margin-top: 4px;">
+              <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 8px;">Please pay your advance or first rent below:</p>
+              <a href="#" id="upiPayLink" style="display: inline-block; background-color: #39b889; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600;">Pay with UPI App</a>
             </div>
           </div>
         </div>
