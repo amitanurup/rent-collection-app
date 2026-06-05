@@ -4689,8 +4689,8 @@ function getDb() {
 let intakesList = [];
 
 async function fetchIntakes() {
-  const syncUrl = localStorage.getItem("app_sync_url");
-  const secretKey = localStorage.getItem("app_sync_key");
+  const syncUrl = SYNC_URL;
+  const secretKey = SYNC_KEY;
   if (!syncUrl || !secretKey) return;
   
   try {
@@ -4748,8 +4748,8 @@ function renderIntakeModal() {
 }
 
 async function updateIntakeStatus(id, status) {
-  const syncUrl = localStorage.getItem("app_sync_url");
-  const secretKey = localStorage.getItem("app_sync_key");
+  const syncUrl = SYNC_URL;
+  const secretKey = SYNC_KEY;
   try {
     await fetch(`${syncUrl}?action=update_intake`, {
       method: 'POST',
@@ -4845,7 +4845,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function getIntakeLink() {
-  const syncUrl = localStorage.getItem("app_sync_url");
+  const syncUrl = SYNC_URL;
   const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '') + "tenant-intake.html";
   if (syncUrl) {
     return baseUrl + "?api=" + encodeURIComponent(syncUrl);
