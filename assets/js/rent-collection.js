@@ -2156,6 +2156,15 @@ async function runAction(action, tenantId, monthKey) {
       return;
     }
 
+    const storedPin = localStorage.getItem("local_app_pin");
+    if (storedPin) {
+      const enteredPin = prompt("Please enter your app password to confirm deletion:");
+      if (enteredPin !== storedPin) {
+        showToast("Incorrect password. Tenant deletion cancelled.");
+        return;
+      }
+    }
+
     state.tenants = state.tenants.filter((item) => item.id !== tenant.id);
     if (ui.selectedTenantId === tenant.id) {
       ui.selectedTenantId = state.tenants[0] ? state.tenants[0].id : null;
