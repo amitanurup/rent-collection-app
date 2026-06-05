@@ -1379,8 +1379,20 @@ function hydratePaymentForm(keepManualMonth = true) {
 
   elements.availableAdvanceHint.textContent = `Available advance: ${formatMoney(availableAdvance)}`;
   elements.collectionRentAmount.value = record ? record.rentAmount : tenant.monthlyRent || "";
+  let defaultPrevReading = "";
+  if (!record) {
+    const earlierPayments = tenant.payments.filter(p => p.monthKey < monthKey);
+    if (earlierPayments.length > 0) {
+      // payments are sorted descending by monthKey, so the first one is the most recent past payment
+      const lastPayment = earlierPayments[0];
+      if (lastPayment.electricityCurrentReading) {
+        defaultPrevReading = lastPayment.electricityCurrentReading;
+      }
+    }
+  }
+
   elements.collectionElectricityPreviousReading.value =
-    record && record.electricityPreviousReading ? record.electricityPreviousReading : "";
+    record && record.electricityPreviousReading ? record.electricityPreviousReading : defaultPrevReading;
   elements.collectionElectricityCurrentReading.value =
     record && record.electricityCurrentReading ? record.electricityCurrentReading : "";
   elements.collectionElectricityUnits.value = record && record.electricityUnits ? record.electricityUnits : "";
