@@ -4793,13 +4793,16 @@ window.viewIntakeDetails = async function(id) {
   const req = intakesList.find(i => i.id === id);
   if (!req) return;
   const html = `
-    <div style="margin-bottom: 8px;"><strong>Name:</strong> <span style="color:#fff;">${escapeHtml(req.name || "")}</span></div>
-    <div style="margin-bottom: 8px;"><strong>Mobile:</strong> <span style="color:#fff;">${escapeHtml(req.mobile || "")}</span></div>
-    <div style="margin-bottom: 8px;"><strong>Total Members:</strong> <span style="color:#fff;">${escapeHtml(req.totalMembers || "1")}</span></div>
-    <div style="margin-bottom: 8px;"><strong>Aadhaar/ID:</strong> <span style="color:#fff;">${escapeHtml(req.aadhaarNumber || req.idNumber || "")}</span></div>
-    <div style="margin-bottom: 8px;"><strong>Start Date:</strong> <span style="color:#fff;">${escapeHtml(req.startDate || "-")}</span></div>
-    <div style="margin-bottom: 8px;"><strong>Address:</strong> <span style="color:#fff;">${escapeHtml(req.address || "-")}</span></div>
-    <div style="margin-bottom: 8px;"><strong>Status:</strong> <span style="color:#fff; text-transform:uppercase;">${escapeHtml(req.status)}</span></div>
+    <div style="display:flex;flex-direction:column;gap:8px;text-align:left;font-size:0.95rem;color:var(--text);">
+      <div><strong>Name:</strong> <span>${escapeHtml(req.name || "-")}</span></div>
+      <div><strong>Mobile:</strong> <span>${escapeHtml(req.mobile || "-")}</span></div>
+      <div><strong>Total Members:</strong> <span>${escapeHtml(req.totalMembers || "1")}</span></div>
+      <div><strong>Aadhaar Number:</strong> <span>${escapeHtml(req.aadhaarNumber || req.idNumber || "-")}</span></div>
+      <div><strong>Start Date:</strong> <span>${escapeHtml(req.startDate || "-")}</span></div>
+      <div><strong>Address / Notes:</strong> <span>${escapeHtml(req.address || "-")}</span></div>
+      <div><strong>Status:</strong> <span style="text-transform:uppercase;font-weight:600;color:var(--accent-strong);">${escapeHtml(req.status)}</span></div>
+      <div style="color:var(--text-soft);font-size:0.85rem;margin-top:8px;">Applied: ${new Date(req.timestamp).toLocaleString()}</div>
+    </div>
   `;
   document.getElementById("intakeDetailsContent").innerHTML = html;
   const modal = document.getElementById("intakeDetailsModal");
