@@ -4771,47 +4771,43 @@ async function acceptIntake(id) {
   const req = intakesList.find(i => i.id === id);
   if (!req) return;
   
-  // Close modal
-  document.getElementById("intakeModal").hidden = true;
-  
-  // Switch to Tenants tab and click Add Tenant
-  document.querySelector('[data-tab="tenants"]').click();
-  setTimeout(() => {
-    document.getElementById("addTenantBtn").click();
-    // Pre-fill form
-    document.getElementById("tenantFullName").value = req.name;
-    document.getElementById("tenantMobileNumber").value = req.mobile;
-    document.getElementById("tenantRoomNumber").value = req.roomNumber || "";
-    document.getElementById("tenantIdNumber").value = req.idNumber || "";
-    if (req.notes) document.getElementById("tenantNotes").value = "Intake Notes: " + req.notes;
-    
-    // Hook into saving so we mark it as approved
-    const btn = document.getElementById("tenantSubmitBtn");
-    const originalClick = btn.onclick;
-    
-    const newSubmitHandler = async (e) => {
-      // Check if this was a successful addition by counting tenants before and after
-      const countBefore = state.tenants.length;
-      // Trigger the real form submission logic programmatically if needed or wait for handleTenantSave
-      // Since it's a form submit, handleTenantSave gets called.
-      setTimeout(async () => {
-         if (state.tenants.length > countBefore) {
-           await updateIntakeStatus(id, "approved");
-           showToast("Tenant added and application approved!");
-         }
-      }, 1000);
-      
-      // Cleanup the event listener hook
-      intakeHookCleanup();
-    };
-    
-    const form = document.getElementById("tenantForm");
-    form.addEventListener("submit", newSubmitHandler);
-    
-    function intakeHookCleanup() {
-      form.removeEventListener("submit", newSubmitHandler);
+  if (confirm(`Are you sure you want to load the application from ${req.name} into the Add Tenant form?`)) {
+    // Mark as accepted on server
+    await updateIntakeStatus(id, 'accepted');
+    intakesList = intakesList.map(i => i.id === id ? {...i, status: 'accepted'} : i);
+    updateIntakeBadge();
+    renderIntakeModal();
+
+    // Close modal safely
+    const modal = document.getElementById('intakeModal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.hidden = true;
     }
-  }, 100);
+
+    // Load data into Add Tenant form
+    switchTab("tenant-entry");
+    resetTenantForm();
+    
+    // Fill the fields using the elements map
+    elements.tenantId.value = ""; // generate new on save
+    if (elements.tenantName) elements.tenantName.value = req.name || "";
+    if (elements.tenantMobile) elements.tenantMobile.value = req.mobile || "";
+    if (elements.tenantRoomNumber) elements.tenantRoomNumber.value = req.roomNumber || "";
+    if (elements.tenantMonthlyRent) elements.tenantMonthlyRent.value = req.rentAmount || "";
+    if (elements.tenantAdvancePaid) elements.tenantAdvancePaid.value = req.advancePayment || "";
+    if (elements.tenantTotalMembers) elements.tenantTotalMembers.value = req.totalMembers || "";
+    
+    if (elements.tenantStartDate && req.joinedDate) {
+      elements.tenantStartDate.value = req.joinedDate;
+    }
+    
+    if (elements.tenantNotes) {
+      elements.tenantNotes.value = "Application via Tenant Intake form.";
+    }
+
+    showToast("Application details loaded! Please review and click Save Tenant.");
+  }
 }
 
 async function rejectIntake(id) {
