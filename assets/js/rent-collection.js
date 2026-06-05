@@ -8,7 +8,7 @@ const AUTO_BACKUP_DIRECTORY = "Rent Collection Auto Backup";
 const AUTO_BACKUP_LATEST_FILE = "rent-collection-latest.json";
 const MAX_DOCUMENT_SIZE = 4 * 1024 * 1024;
 const AUTO_BACKUP_DELAY_MS = 1200;
-const APP_TABS = ["overview", "tenants", "collections", "reminders", "settings"];
+const APP_TABS = ["overview", "tenants", "tenant-entry", "collections", "reminders", "settings"];
 const PUBLIC_SITE_FALLBACK_URL = "https://amitanurup.github.io/rent-collection-app";
 
 const APP_PASSWORD = "Amit@1990";
