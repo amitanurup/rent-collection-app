@@ -704,9 +704,14 @@
                     <small>This number is used for tenant payment proof replies from the portal.</small>
                   </label>
 
-
-
-
+                  <label class="field field-wide" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #2a3b4c;">
+                    <span>Offline Backup & Restore</span>
+                    <p style="margin-top: 4px; font-size: 0.85rem; color: #94a3b8; margin-bottom: 16px;">Download a local copy of your data or restore from a previous backup file.</p>
+                    <div class="tool-grid">
+                      <button class="button button-ghost" id="exportDataBtn" type="button">Backup Data</button>
+                      <button class="button button-ghost" id="settingsImportBtn" type="button" onclick="document.getElementById('importFileInput').click()">Restore Data</button>
+                    </div>
+                  </label>
 
                   <div class="form-actions form-actions-wide">
                     <button class="button button-accent" type="submit">Save Setup</button>
