@@ -127,6 +127,29 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
               document.getElementById('upiPaymentSection').classList.add('hidden');
             }
+            
+            document.getElementById('downloadChargesBtn').onclick = () => {
+              const receiptText = `RENTAL CHARGES RECEIPT
+----------------------
+Name: ${data.name}
+Mobile: ${data.mobile}
+Date: ${new Date().toLocaleDateString()}
+
+CHARGES ASSIGNED:
+Monthly Rent: Rs. ${data.assignedData.rent || "-"}
+Electricity (per unit): Rs. ${data.assignedData.electricity || "-"}
+Default Water Bill: Rs. ${data.assignedData.water || "-"}
+Advance Rent: Rs. ${data.assignedData.advance || "-"}
+----------------------
+Please keep this receipt for your records.`;
+              const blob = new Blob([receiptText], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `Charges_Receipt_${data.mobile}.txt`;
+              a.click();
+              URL.revokeObjectURL(url);
+            };
 
             assignedDataEl.classList.remove('hidden');
           }
