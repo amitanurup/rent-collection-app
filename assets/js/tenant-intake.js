@@ -110,9 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (data.status === 'approved') {
           statusBadge.classList.add('status-approved');
           if (data.assignedData) {
-            document.getElementById('assignedRent').textContent = data.assignedData.rent || "-";
-            document.getElementById('assignedElec').textContent = data.assignedData.electricity ? `₹${data.assignedData.electricity}` : "-";
-            document.getElementById('assignedWater').textContent = data.assignedData.water || "-";
+            document.getElementById('assignedRent').textContent = data.assignedData.rent ? `Rs. ${data.assignedData.rent}` : "-";
+            document.getElementById('assignedElec').textContent = data.assignedData.electricity ? `Rs. ${data.assignedData.electricity}` : "-";
+            document.getElementById('assignedWater').textContent = data.assignedData.water ? `Rs. ${data.assignedData.water}` : "-";
             assignedDataEl.classList.remove('hidden');
           }
         } else if (data.status === 'rejected') {
