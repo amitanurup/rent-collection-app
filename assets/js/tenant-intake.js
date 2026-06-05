@@ -49,9 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = {
       name: document.getElementById('fullName').value.trim(),
       mobile: document.getElementById('mobileNumber').value.trim(),
-      roomNumber: document.getElementById('roomNumber').value.trim(),
-      idNumber: document.getElementById('idNumber').value.trim(),
-      notes: document.getElementById('notes').value.trim()
+      totalMembers: document.getElementById('totalMembers').value.trim() || 1,
+      aadhaarNumber: document.getElementById('aadhaarNumber').value.trim(),
+      startDate: document.getElementById('startDate').value.trim(),
+      address: document.getElementById('address').value.trim()
     };
 
     try {

@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="assets/css/tenant-public.css" />
-    <script src="assets/js/tenant-intake.js?v=2" defer></script>
+    <script src="assets/js/tenant-intake.js?v=3" defer></script>
 
     <style>
       .intake-container {
@@ -147,16 +147,20 @@
             <input type="tel" id="mobileNumber" required placeholder="10-digit mobile number" pattern="[0-9]{10}" />
           </div>
           <div class="form-group">
-            <label for="roomNumber">Room Preference / Number</label>
-            <input type="text" id="roomNumber" placeholder="e.g. 101 or 1BHK" />
+            <label for="totalMembers">Total Members</label>
+            <input type="number" id="totalMembers" min="1" placeholder="Example: 3" />
           </div>
           <div class="form-group">
-            <label for="idNumber">Aadhaar / ID Number</label>
-            <input type="text" id="idNumber" placeholder="Optional" />
+            <label for="aadhaarNumber">Aadhaar Number *</label>
+            <input type="text" id="aadhaarNumber" required placeholder="12-digit Aadhaar number" pattern="[0-9]{12}" />
           </div>
           <div class="form-group">
-            <label for="notes">Additional Notes</label>
-            <textarea id="notes" rows="3" placeholder="Any specific requirements or message..."></textarea>
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" required />
+          </div>
+          <div class="form-group">
+            <label for="address">Address / ID Note</label>
+            <textarea id="address" rows="3" placeholder="Room address, hometown, or any ID note..."></textarea>
           </div>
           <button type="submit" id="submitBtn" class="btn">Submit Application</button>
           <button type="button" id="showStatusBtn" class="btn btn-outline">Check Application Status</button>

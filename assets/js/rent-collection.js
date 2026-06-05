@@ -4748,8 +4748,10 @@ function renderIntakeModal() {
       <h4 style="margin: 0 0 4px 0; font-size: 1.1rem; color: #111827;">${escapeHtml(req.name)}</h4>
       <div style="color: #4b5563; font-size: 0.9rem; margin-bottom: 12px;">
         <div>Mobile: <strong>${escapeHtml(req.mobile)}</strong></div>
-        <div>Room: <strong>${escapeHtml(req.roomNumber || "-")}</strong></div>
-        ${req.notes ? `<div>Notes: <em>${escapeHtml(req.notes)}</em></div>` : ""}
+        <div>Aadhaar: <strong>${escapeHtml(req.aadhaarNumber || req.idNumber || "-")}</strong></div>
+        <div>Members: <strong>${escapeHtml(req.totalMembers || "1")}</strong></div>
+        ${req.startDate ? `<div>Start Date: <strong>${escapeHtml(req.startDate)}</strong></div>` : ""}
+        ${req.address ? `<div>Address/ID Note: <em>${escapeHtml(req.address)}</em></div>` : ""}
         <div style="font-size: 0.8rem; color: #9ca3af; margin-top: 4px;">Applied: ${new Date(req.timestamp).toLocaleString()}</div>
       </div>
       <div style="display: flex; gap: 8px;">
@@ -4814,17 +4816,15 @@ async function acceptIntake(id) {
     elements.tenantId.value = ""; // generate new on save
     if (elements.tenantName) elements.tenantName.value = req.name || "";
     if (elements.tenantMobile) elements.tenantMobile.value = req.mobile || "";
-    if (elements.tenantRoomNumber) elements.tenantRoomNumber.value = req.roomNumber || "";
-    if (elements.tenantMonthlyRent) elements.tenantMonthlyRent.value = req.rentAmount || "";
-    if (elements.tenantAdvancePaid) elements.tenantAdvancePaid.value = req.advancePayment || "";
     if (elements.tenantTotalMembers) elements.tenantTotalMembers.value = req.totalMembers || "";
+    if (elements.tenantAadhaarNumber) elements.tenantAadhaarNumber.value = req.aadhaarNumber || req.idNumber || "";
     
-    if (elements.tenantStartDate && req.joinedDate) {
-      elements.tenantStartDate.value = req.joinedDate;
+    if (elements.tenantStartDate && req.startDate) {
+      elements.tenantStartDate.value = req.startDate;
     }
     
-    if (elements.tenantNotes) {
-      elements.tenantNotes.value = "Application via Tenant Intake form.";
+    if (elements.tenantAddress && req.address) {
+      elements.tenantAddress.value = req.address;
     }
 
     showToast("Application details loaded! Please review and click Save Tenant.");
