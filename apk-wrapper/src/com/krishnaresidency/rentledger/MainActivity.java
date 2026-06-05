@@ -36,15 +36,18 @@ import java.io.OutputStream;
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST_CODE = 7001;
     private static final int WRITE_STORAGE_REQUEST_CODE = 7002;
+    private static final String PRIMARY_APP_URL = "https://amitanurup.github.io/rent-collection-app/";
+    private static final String FALLBACK_APP_URL = "file:///android_asset/index.html";
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
+    private boolean loadedFallbackAsset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         configureWebView();
-        webView.loadUrl("file:///android_asset/index.html");
+        webView.loadUrl(PRIMARY_APP_URL);
     }
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -152,6 +155,16 @@ public class MainActivity extends Activity {
         webView.evaluateJavascript(script, null);
     }
 
+    private void loadFallbackAsset() {
+        if (loadedFallbackAsset) {
+            return;
+        }
+
+        loadedFallbackAsset = true;
+        Toast.makeText(this, "Internet issue detected. Offline copy open ki ja rahi hai.", Toast.LENGTH_LONG).show();
+        webView.loadUrl(FALLBACK_APP_URL);
+    }
+
     private void createPrintJob() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             Toast.makeText(this, "Printing is not supported on this Android version.", Toast.LENGTH_SHORT).show();
@@ -247,6 +260,22 @@ public class MainActivity extends Activity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             injectAndroidHelpers();
+        }
+
+        @Override
+        public void onReceivedError(WebView view, WebResourceRequest request, android.webkit.WebResourceError error) {
+            super.onReceivedError(view, request, error);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && request != null && request.isForMainFrame()) {
+                loadFallbackAsset();
+            }
+        }
+
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            super.onReceivedError(view, errorCode, description, failingUrl);
+            if (failingUrl != null && failingUrl.equals(PRIMARY_APP_URL)) {
+                loadFallbackAsset();
+            }
         }
     }
 

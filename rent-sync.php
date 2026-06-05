@@ -123,6 +123,9 @@ if ($action === 'update_intake' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($intakes as &$intake) {
             if ($intake['id'] === $decoded['id']) {
                 $intake['status'] = $decoded['status'];
+                if (isset($decoded['assignedData'])) {
+                    $intake['assignedData'] = $decoded['assignedData'];
+                }
             }
         }
         file_put_contents($INTAKES_FILE, json_encode($intakes));

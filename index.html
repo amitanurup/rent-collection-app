@@ -838,6 +838,33 @@
         </div>
       </div>
       
+      <!-- Accept Intake Modal -->
+      <div class="app-modal" id="acceptIntakeModal" hidden aria-hidden="true" style="z-index: 10000;">
+        <div class="app-modal-backdrop" onclick="closeAcceptIntakeModal(null)"></div>
+        <div class="app-modal-card" role="dialog" aria-modal="true" aria-labelledby="acceptIntakeModalTitle" style="max-width: 360px; text-align: left;">
+          <div class="app-modal-copy">
+            <h3 id="acceptIntakeModalTitle" style="margin-top: 0;">Assign Charges</h3>
+            <p style="margin-bottom: 16px; font-size: 0.9rem; color: #94a3b8;">Please define the charges for this tenant.</p>
+            <div class="field-group" style="margin-bottom: 12px; display:flex; flex-direction:column; gap:4px;">
+              <label for="acceptIntakeRent" style="font-size:0.85rem; color:#fff;">Monthly Rent *</label>
+              <input type="number" id="acceptIntakeRent" placeholder="e.g. 5000" style="padding:10px; border-radius:6px; border:1px solid #334155; background:#0f172a; color:#fff;" />
+            </div>
+            <div class="field-group" style="margin-bottom: 12px; display:flex; flex-direction:column; gap:4px;">
+              <label for="acceptIntakeElectricity" style="font-size:0.85rem; color:#fff;">Electricity Unit Charge *</label>
+              <input type="number" step="0.1" id="acceptIntakeElectricity" placeholder="e.g. 8" style="padding:10px; border-radius:6px; border:1px solid #334155; background:#0f172a; color:#fff;" />
+            </div>
+            <div class="field-group" style="margin-bottom: 20px; display:flex; flex-direction:column; gap:4px;">
+              <label for="acceptIntakeWater" style="font-size:0.85rem; color:#fff;">Default Water Bill</label>
+              <input type="number" id="acceptIntakeWater" placeholder="e.g. 200" style="padding:10px; border-radius:6px; border:1px solid #334155; background:#0f172a; color:#fff;" />
+            </div>
+          </div>
+          <div class="app-modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button class="button button-ghost" type="button" onclick="closeAcceptIntakeModal(null)">Cancel</button>
+            <button class="button button-accent" type="button" onclick="submitAcceptIntakeModal()">Accept</button>
+          </div>
+        </div>
+      </div>
+      
       <div class="toast" id="appToast" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>

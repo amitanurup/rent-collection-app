@@ -808,7 +808,7 @@ function normalizeTenant(source) {
     fullName: cleanString(source.fullName),
     mobile: cleanMobileNumber(source.mobile),
     totalMembers: toWholeNumber(source.totalMembers),
-    aadhaarNumber: cleanDigits(source.aadhaarNumber).slice(0, 12),
+    aadhaarNumber: cleanString(source.aadhaarNumber),
     roomNumber: cleanString(source.roomNumber),
     floor: cleanString(source.floor),
     startDate: isValidDate(source.startDate) ? source.startDate : getTodayIso(),
@@ -4748,32 +4748,64 @@ function renderIntakeModal() {
       <h4 style="margin: 0 0 4px 0; font-size: 1.1rem; color: #111827;">${escapeHtml(req.name)}</h4>
       <div style="color: #4b5563; font-size: 0.9rem; margin-bottom: 12px;">
         <div>Mobile: <strong>${escapeHtml(req.mobile)}</strong></div>
-        <div>Aadhaar: <strong>${escapeHtml(req.aadhaarNumber || req.idNumber || "-")}</strong></div>
-        <div>Members: <strong>${escapeHtml(req.totalMembers || "1")}</strong></div>
-        ${req.startDate ? `<div>Start Date: <strong>${escapeHtml(req.startDate)}</strong></div>` : ""}
-        ${req.address ? `<div>Address/ID Note: <em>${escapeHtml(req.address)}</em></div>` : ""}
         <div style="font-size: 0.8rem; color: #9ca3af; margin-top: 4px;">Applied: ${new Date(req.timestamp).toLocaleString()}</div>
       </div>
       <div style="display: flex; gap: 8px;">
         <button class="button button-accent" style="padding: 6px 12px; font-size: 0.9rem;" onclick="acceptIntake('${req.id}')">Accept & Add</button>
+        <button class="button button-ghost" style="padding: 6px 12px; font-size: 0.9rem; color: #4b5563;" onclick="viewIntakeDetails('${req.id}')">View Details</button>
         <button class="button button-ghost" style="padding: 6px 12px; font-size: 0.9rem; color: #ef4444;" onclick="rejectIntake('${req.id}')">Reject</button>
       </div>
     </div>
   `).join("");
 }
 
-async function updateIntakeStatus(id, status) {
+function viewIntakeDetails(id) {
+  const req = intakesList.find(i => i.id === id);
+  if (!req) return;
+  const bodyHtml = `
+    <div style="display:flex;flex-direction:column;gap:8px;text-align:left;font-size:0.95rem;">
+      <div><strong>Name:</strong> ${escapeHtml(req.name)}</div>
+      <div><strong>Mobile:</strong> ${escapeHtml(req.mobile)}</div>
+      <div><strong>Total Members:</strong> ${escapeHtml(req.totalMembers || "1")}</div>
+      <div><strong>Aadhaar Number:</strong> ${escapeHtml(req.aadhaarNumber || req.idNumber || "-")}</div>
+      <div><strong>Start Date:</strong> ${escapeHtml(req.startDate || "-")}</div>
+      <div><strong>Address / Notes:</strong> ${escapeHtml(req.address || "-")}</div>
+      <div style="color:#6b7280;font-size:0.85rem;margin-top:8px;">Applied: ${new Date(req.timestamp).toLocaleString()}</div>
+    </div>
+  `;
+  const modal = document.getElementById("appModal");
+  const titleEl = document.getElementById("appModalTitle");
+  const bodyEl = document.getElementById("appModalBody");
+  const confirmBtn = document.getElementById("appModalConfirm");
+  const cancelBtn = document.getElementById("appModalCancel");
+  titleEl.textContent = "Application Details";
+  bodyEl.innerHTML = bodyHtml;
+  cancelBtn.style.display = "none";
+  confirmBtn.textContent = "Close";
+  confirmBtn.onclick = () => closeAppModal(true);
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+}
+
+async function updateIntakeStatus(id, status, data = null) {
   const syncUrl = SYNC_URL;
   const secretKey = SYNC_KEY;
   try {
+    const payload = { id, status };
+    if (data) {
+      payload.assignedData = data;
+    }
     await fetch(`${syncUrl}?action=update_intake`, {
       method: 'POST',
       headers: { "X-Secret-Key": secretKey, "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status })
+      body: JSON.stringify(payload)
     });
     // Optimistic update
     const req = intakesList.find(i => i.id === id);
-    if (req) req.status = status;
+    if (req) {
+      req.status = status;
+      if (data) req.assignedData = data;
+    }
     updateIntakeBadge();
     renderIntakeModal();
   } catch(e) {
@@ -4786,18 +4818,12 @@ async function acceptIntake(id) {
   const req = intakesList.find(i => i.id === id);
   if (!req) return;
   
-  const confirmLoad = await openConfirmDialog({
-    title: "Accept Application",
-    body: `Are you sure you want to load the application from ${req.name} into the Add Tenant form?`,
-    confirmText: "Accept & Load",
-    cancelText: "Cancel",
-    tone: "accent"
-  });
+  const assignedData = await openAcceptIntakeModal();
   
-  if (confirmLoad) {
-    // Mark as accepted on server
-    await updateIntakeStatus(id, 'accepted');
-    intakesList = intakesList.map(i => i.id === id ? {...i, status: 'accepted'} : i);
+  if (assignedData) {
+    // Mark as approved on server with payload
+    await updateIntakeStatus(id, 'approved', assignedData);
+    intakesList = intakesList.map(i => i.id === id ? {...i, status: 'approved', assignedData} : i);
     updateIntakeBadge();
     renderIntakeModal();
 
@@ -4827,7 +4853,14 @@ async function acceptIntake(id) {
       elements.tenantAddress.value = req.address;
     }
 
-    showToast("Application details loaded! Please review and click Save Tenant.");
+    if (elements.tenantMonthlyRent) elements.tenantMonthlyRent.value = assignedData.rent || "";
+    if (elements.tenantWaterBill && assignedData.water) elements.tenantWaterBill.value = assignedData.water;
+    
+    const notesLines = [];
+    if (assignedData.electricity) notesLines.push(`Electricity: ${assignedData.electricity} per unit`);
+    if (elements.tenantNotes) elements.tenantNotes.value = notesLines.join("\n");
+
+    showToast("Application accepted! Charges loaded. Please review and click Save Tenant.");
   }
 }
 
@@ -4940,4 +4973,41 @@ window.viewAadhaarDocument = function(event, tenantId) {
   } else {
     showToast("Popup blocked! Please allow popups.");
   }
+};
+
+window.openAcceptIntakeModal = function() {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("acceptIntakeModal");
+    const rentInput = document.getElementById("acceptIntakeRent");
+    const elecInput = document.getElementById("acceptIntakeElectricity");
+    const waterInput = document.getElementById("acceptIntakeWater");
+    rentInput.value = "";
+    elecInput.value = "";
+    waterInput.value = "";
+    ui.acceptIntakeResolver = resolve;
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(() => rentInput.focus());
+  });
+};
+
+window.closeAcceptIntakeModal = function(val) {
+  const modal = document.getElementById("acceptIntakeModal");
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  if (ui.acceptIntakeResolver) {
+    ui.acceptIntakeResolver(val);
+    ui.acceptIntakeResolver = null;
+  }
+};
+
+window.submitAcceptIntakeModal = function() {
+  const rent = document.getElementById("acceptIntakeRent").value;
+  const elec = document.getElementById("acceptIntakeElectricity").value;
+  const water = document.getElementById("acceptIntakeWater").value;
+  if (!rent || !elec) {
+    showToast("Please enter Rent and Electricity unit charge.");
+    return;
+  }
+  closeAcceptIntakeModal({ rent, electricity: elec, water });
 };

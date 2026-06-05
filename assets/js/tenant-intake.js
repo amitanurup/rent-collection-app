@@ -102,9 +102,22 @@ document.addEventListener('DOMContentLoaded', () => {
         statusBadge.textContent = data.status.toUpperCase();
         
         statusBadge.className = 'status-badge';
-        if (data.status === 'pending') statusBadge.classList.add('status-pending');
-        else if (data.status === 'approved') statusBadge.classList.add('status-approved');
-        else if (data.status === 'rejected') statusBadge.classList.add('status-rejected');
+        const assignedDataEl = document.getElementById('assignedDataResult');
+        assignedDataEl.classList.add('hidden');
+        
+        if (data.status === 'pending') {
+          statusBadge.classList.add('status-pending');
+        } else if (data.status === 'approved') {
+          statusBadge.classList.add('status-approved');
+          if (data.assignedData) {
+            document.getElementById('assignedRent').textContent = data.assignedData.rent || "-";
+            document.getElementById('assignedElec').textContent = data.assignedData.electricity ? `₹${data.assignedData.electricity}` : "-";
+            document.getElementById('assignedWater').textContent = data.assignedData.water || "-";
+            assignedDataEl.classList.remove('hidden');
+          }
+        } else if (data.status === 'rejected') {
+          statusBadge.classList.add('status-rejected');
+        }
         
         statusResult.classList.remove('hidden');
       } else {

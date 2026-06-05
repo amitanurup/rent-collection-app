@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="assets/css/tenant-public.css" />
-    <script src="assets/js/tenant-intake.js?v=3" defer></script>
+    <script src="assets/js/tenant-intake.js?v=20260606-v2" defer></script>
 
     <style>
       .intake-container {
@@ -185,6 +185,22 @@
           <h3 style="margin: 0 0 8px 0; font-size: 1.1rem; color: #111827;" id="statusName"></h3>
           <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Your application status is:</p>
           <span id="statusBadge" class="status-badge"></span>
+          
+          <div id="assignedDataResult" class="hidden" style="margin-top: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px; font-size: 0.9rem;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: #111827;">Assigned Charges</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+              <span style="color: #4b5563;">Monthly Rent</span>
+              <strong id="assignedRent" style="color: #111827;"></strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+              <span style="color: #4b5563;">Electricity (per unit)</span>
+              <strong id="assignedElec" style="color: #111827;"></strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color: #4b5563;">Default Water Bill</span>
+              <strong id="assignedWater" style="color: #111827;"></strong>
+            </div>
+          </div>
         </div>
       </div>
 
