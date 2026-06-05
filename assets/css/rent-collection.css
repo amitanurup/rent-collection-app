@@ -1504,13 +1504,13 @@ img {
   position: relative;
   overflow: hidden;
   display: grid;
-  gap: 18px;
-  padding: 24px;
-  border-radius: 28px;
-  background:
-    radial-gradient(circle at top right, rgba(57, 184, 137, 0.12), transparent 28%),
-    rgba(255, 251, 246, 0.98);
-  color: #183028;
+  gap: 20px;
+  padding: 32px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  color: #1f2937;
 }
 
 .receipt-sheet-topline,
@@ -1523,8 +1523,8 @@ img {
 }
 
 .receipt-sheet-topline {
-  padding-bottom: 18px;
-  border-bottom: 1px solid rgba(24, 48, 40, 0.12);
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f3f4f6;
 }
 
 .receipt-sheet-brand {
@@ -1539,13 +1539,13 @@ img {
 }
 
 .receipt-sheet-logo {
-  width: 94px;
-  height: 94px;
+  width: 80px;
+  height: 80px;
   object-fit: cover;
-  border-radius: 22px;
+  border-radius: 50%;
   background: #ffffff;
-  border: 1px solid rgba(24, 48, 40, 0.08);
-  box-shadow: 0 16px 30px rgba(24, 48, 40, 0.08);
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   flex: 0 0 auto;
 }
 
@@ -1558,7 +1558,10 @@ img {
 
 .receipt-sheet h2 {
   font-family: "Fraunces", Georgia, serif;
-  font-size: 2rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
 }
 
 .receipt-sheet > :not(.receipt-sheet-watermark) {
@@ -1582,8 +1585,9 @@ img {
 }
 
 .receipt-sheet-meta {
-  margin-top: 10px;
-  color: rgba(24, 48, 40, 0.68);
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 0.9rem;
 }
 
 .receipt-sheet-code {
@@ -1597,23 +1601,28 @@ img {
 .receipt-sheet-total {
   display: grid;
   gap: 0;
-  padding: 18px;
-  border-radius: 22px;
+  padding: 20px;
+  border-radius: 12px;
 }
 
 .receipt-sheet-card {
-  background: rgba(248, 245, 239, 0.92);
-  border: 1px solid rgba(24, 48, 40, 0.08);
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
 }
 
 .receipt-sheet-total {
-  background: linear-gradient(135deg, #1d7a5b, #155743);
-  color: #fff8ef;
+  background: linear-gradient(135deg, #1f2937, #111827);
+  color: #f9fafb;
+  box-shadow: 0 8px 20px rgba(17, 24, 39, 0.15);
 }
 
 .receipt-sheet-row {
-  padding: 12px 0;
-  border-bottom: 1px dashed rgba(24, 48, 40, 0.16);
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.receipt-sheet-total .receipt-sheet-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .receipt-sheet-card .receipt-sheet-row:last-child,
