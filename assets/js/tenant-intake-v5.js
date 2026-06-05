@@ -116,9 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('assignedAdvance').textContent = data.assignedData.advance ? `Rs. ${data.assignedData.advance}` : "-";
             
             const upiIdStr = data.assignedData.upiId || "";
+            const payeeName = data.assignedData.upiPayeeName || "House Rent";
             const totalAmount = (parseFloat(data.assignedData.rent || 0) + parseFloat(data.assignedData.advance || 0)).toFixed(2);
             if (totalAmount > 0) {
-              const upiLink = `upi://pay?pa=${encodeURIComponent(upiIdStr)}&pn=House%20Rent&am=${totalAmount}&cu=INR&tn=Rent%20Advance`;
+              const upiLink = `upi://pay?pa=${encodeURIComponent(upiIdStr)}&pn=${encodeURIComponent(payeeName)}&am=${totalAmount}&cu=INR&tn=Rent%20Advance`;
               document.getElementById('upiPayLink').href = upiLink;
               
               if (!upiIdStr) {

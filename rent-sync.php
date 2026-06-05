@@ -88,6 +88,7 @@ if ($action === 'check_intake' && $_SERVER['REQUEST_METHOD'] === 'GET') {
         $settings = file_exists($SETTINGS_FILE) ? json_decode(file_get_contents($SETTINGS_FILE), true) : [];
         if (!is_array($settings)) $settings = [];
         $globalUpiId = isset($settings['upiId']) ? $settings['upiId'] : "";
+        $globalOwnerName = isset($settings['ownerName']) ? $settings['ownerName'] : "House Rent";
         
         $user_intakes = array_filter($intakes, function($i) use ($mobile) {
             return isset($i['mobile']) && $i['mobile'] === $mobile;
@@ -102,6 +103,7 @@ if ($action === 'check_intake' && $_SERVER['REQUEST_METHOD'] === 'GET') {
                 if (empty($response['assignedData']['upiId']) && !empty($globalUpiId)) {
                     $response['assignedData']['upiId'] = $globalUpiId;
                 }
+                $response['assignedData']['upiPayeeName'] = $globalOwnerName;
             }
             echo json_encode($response);
             exit();

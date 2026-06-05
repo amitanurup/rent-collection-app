@@ -2210,7 +2210,7 @@ async function handleProfileSave(event) {
           "X-Secret-Key": state.profile.serverKey,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ upiId: state.profile.upiId })
+        body: JSON.stringify({ upiId: state.profile.upiId, ownerName: state.profile.ownerName || state.profile.propertyName || "Owner" })
       });
     } catch (e) {
       console.error("Failed to sync settings to custom server", e);
