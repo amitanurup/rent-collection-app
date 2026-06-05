@@ -1375,7 +1375,7 @@ img {
 .app-modal {
   position: fixed;
   inset: 0;
-  z-index: 70;
+  z-index: 10010;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -1455,7 +1455,7 @@ img {
 .receipt-modal {
   position: fixed;
   inset: 0;
-  z-index: 72;
+  z-index: 10005;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -1642,7 +1642,7 @@ img {
   position: fixed;
   right: 18px;
   bottom: 18px;
-  z-index: 60;
+  z-index: 10020;
   min-width: min(360px, calc(100vw - 36px));
   padding: 14px 18px;
   border-radius: 18px;
