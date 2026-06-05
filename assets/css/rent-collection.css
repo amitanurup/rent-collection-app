@@ -4079,6 +4079,9 @@ body {
 .receipt-modal-card { color: var(--text-inverse); }
 .receipt-modal-head .eyebrow { color: var(--text-inverse-soft); }
 .receipt-modal-actions { position: relative; z-index: 10; pointer-events: auto; }
-.receipt-modal-actions .button-ghost { color: var(--text-inverse); border-color: rgba(255, 255, 255, 0.2); }
+.receipt-modal-actions .button-ghost { color: #000000 !important; background: #ffffff !important; border: 1px solid #cccccc !important; font-weight: bold; }
 .receipt-modal-actions .button-ghost:hover { background: rgba(255, 255, 255, 0.05); }
+
+
+.receipt-modal-actions .button { z-index: 99 !important; position: relative !important; pointer-events: auto !important; }
 
