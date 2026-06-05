@@ -4074,3 +4074,11 @@ body {
     transition-duration: 0ms !important;
   }
 }
+
+/* Fix for Receipt Modal text color and button visibility */
+.receipt-modal-card { color: var(--text-inverse); }
+.receipt-modal-head .eyebrow { color: var(--text-inverse-soft); }
+.receipt-modal-actions { position: relative; z-index: 10; pointer-events: auto; }
+.receipt-modal-actions .button-ghost { color: var(--text-inverse); border-color: rgba(255, 255, 255, 0.2); }
+.receipt-modal-actions .button-ghost:hover { background: rgba(255, 255, 255, 0.05); }
+
