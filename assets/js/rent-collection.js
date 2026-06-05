@@ -4789,6 +4789,24 @@ async function updateIntakeStatus(id, status, data = null) {
   }
 }
 
+window.viewIntakeDetails = async function(id) {
+  const req = intakesList.find(i => i.id === id);
+  if (!req) return;
+  const html = `
+    <div style="margin-bottom: 8px;"><strong>Name:</strong> <span style="color:#fff;">${escapeHtml(req.name || "")}</span></div>
+    <div style="margin-bottom: 8px;"><strong>Mobile:</strong> <span style="color:#fff;">${escapeHtml(req.mobile || "")}</span></div>
+    <div style="margin-bottom: 8px;"><strong>Total Members:</strong> <span style="color:#fff;">${escapeHtml(req.totalMembers || "1")}</span></div>
+    <div style="margin-bottom: 8px;"><strong>Aadhaar/ID:</strong> <span style="color:#fff;">${escapeHtml(req.aadhaarNumber || req.idNumber || "")}</span></div>
+    <div style="margin-bottom: 8px;"><strong>Start Date:</strong> <span style="color:#fff;">${escapeHtml(req.startDate || "-")}</span></div>
+    <div style="margin-bottom: 8px;"><strong>Address:</strong> <span style="color:#fff;">${escapeHtml(req.address || "-")}</span></div>
+    <div style="margin-bottom: 8px;"><strong>Status:</strong> <span style="color:#fff; text-transform:uppercase;">${escapeHtml(req.status)}</span></div>
+  `;
+  document.getElementById("intakeDetailsContent").innerHTML = html;
+  const modal = document.getElementById("intakeDetailsModal");
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+};
+
 async function acceptIntake(id) {
   const req = intakesList.find(i => i.id === id);
   if (!req) return;

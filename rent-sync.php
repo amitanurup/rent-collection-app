@@ -72,7 +72,11 @@ if ($action === 'check_intake' && $_SERVER['REQUEST_METHOD'] === 'GET') {
         if (count($user_intakes) > 0) {
             usort($user_intakes, function($a, $b) { return $b['timestamp'] - $a['timestamp']; });
             $latest = array_values($user_intakes)[0];
-            echo json_encode(["found" => true, "status" => $latest['status'], "name" => $latest['name']]);
+            $response = ["found" => true, "status" => $latest['status'], "name" => $latest['name']];
+            if (isset($latest['assignedData'])) {
+                $response['assignedData'] = $latest['assignedData'];
+            }
+            echo json_encode($response);
             exit();
         }
         echo json_encode(["found" => false]);
