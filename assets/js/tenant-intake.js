@@ -60,7 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const data = await response.json();
+      
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error("Non-JSON Server Response: " + text.substring(0, 30));
+      }
+
       if (data.success) {
         showToast('Application submitted successfully!');
         intakeForm.reset();
@@ -69,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(data.error || 'Failed to submit application.');
       }
     } catch (err) {
-      showToast('Network error. Please try again.');
+      showToast('Error: ' + err.message);
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit Application';
