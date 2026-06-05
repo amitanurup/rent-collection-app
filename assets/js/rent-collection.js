@@ -4946,7 +4946,7 @@ function submitPasswordModal() {
 window.viewAadhaarDocument = function(event, tenantId) {
   event.stopPropagation();
   const tenant = state.tenants.find(t => t.id === tenantId);
-  if (!tenant || !tenant.aadhaarDocument || !tenant.aadhaarDocument.data) {
+  if (!tenant || !tenant.aadhaarDocument || !tenant.aadhaarDocument.dataUrl) {
     showToast("Aadhaar document not found.");
     return;
   }
@@ -4957,14 +4957,14 @@ window.viewAadhaarDocument = function(event, tenantId) {
   
   content.innerHTML = "";
   if (tenant.aadhaarDocument.type.startsWith('image/')) {
-    content.innerHTML = `<img src="${tenant.aadhaarDocument.data}" style="max-width:100%; max-height:70vh; display:block; margin:0 auto;" />`;
+    content.innerHTML = `<img src="${tenant.aadhaarDocument.dataUrl}" style="max-width:100%; max-height:70vh; display:block; margin:0 auto;" />`;
   } else if (tenant.aadhaarDocument.type === 'application/pdf') {
-    content.innerHTML = `<iframe src="${tenant.aadhaarDocument.data}" width="100%" height="500px" style="border: none;"></iframe>`;
+    content.innerHTML = `<iframe src="${tenant.aadhaarDocument.dataUrl}" width="100%" height="500px" style="border: none;"></iframe>`;
   } else {
     content.innerHTML = `<p style="color:white; padding:20px;">Cannot preview this file type.</p>`;
   }
   
-  downloadLink.href = tenant.aadhaarDocument.data;
+  downloadLink.href = tenant.aadhaarDocument.dataUrl;
   downloadLink.download = `aadhaar_${tenant.id}.${tenant.aadhaarDocument.type.split('/')[1] || 'bin'}`;
   
   modal.hidden = false;
