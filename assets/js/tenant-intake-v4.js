@@ -134,26 +134,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             document.getElementById('downloadChargesBtn').onclick = () => {
-              const receiptText = `RENTAL CHARGES RECEIPT
-----------------------
-Name: ${data.name}
-Mobile: ${data.mobile}
-Date: ${new Date().toLocaleDateString()}
-
-CHARGES ASSIGNED:
-Monthly Rent: Rs. ${data.assignedData.rent || "-"}
-Electricity (per unit): Rs. ${data.assignedData.electricity || "-"}
-Default Water Bill: Rs. ${data.assignedData.water || "-"}
-Advance Rent: Rs. ${data.assignedData.advance || "-"}
-----------------------
-Please keep this receipt for your records.`;
-              const blob = new Blob([receiptText], { type: 'text/plain' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `Charges_Receipt_${data.mobile}.txt`;
-              a.click();
-              URL.revokeObjectURL(url);
+              const receiptWindow = window.open('', '_blank');
+              receiptWindow.document.write(`
+                <html>
+                <head>
+                  <title>Charges Receipt</title>
+                  <style>
+                    body { font-family: sans-serif; padding: 20px; line-height: 1.6; color: #333; }
+                    .receipt-box { border: 1px solid #ccc; padding: 20px; max-width: 400px; margin: 0 auto; border-radius: 8px; }
+                    h2 { text-align: center; margin-top: 0; }
+                    .row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 0.9em; color: #777; }
+                  </style>
+                </head>
+                <body>
+                  <div class="receipt-box">
+                    <h2>Rent Charges Receipt</h2>
+                    <div class="row"><span>Name:</span> <strong>${data.name}</strong></div>
+                    <div class="row"><span>Mobile:</span> <strong>${data.mobile}</strong></div>
+                    <div class="row"><span>Date:</span> <strong>${new Date().toLocaleDateString()}</strong></div>
+                    <h3 style="margin-top: 20px;">Assigned Charges</h3>
+                    <div class="row"><span>Monthly Rent:</span> <strong>Rs. ${data.assignedData.rent || "-"}</strong></div>
+                    <div class="row"><span>Electricity (per unit):</span> <strong>Rs. ${data.assignedData.electricity || "-"}</strong></div>
+                    <div class="row"><span>Water Bill:</span> <strong>Rs. ${data.assignedData.water || "-"}</strong></div>
+                    <div class="row"><span>Advance Rent:</span> <strong>Rs. ${data.assignedData.advance || "-"}</strong></div>
+                    <div class="row" style="margin-top: 10px; font-weight: bold; border-top: 1px solid #333; padding-top: 8px;">
+                      <span>Total Initial Payment:</span> 
+                      <span>Rs. ${totalAmount > 0 ? totalAmount : "-"}</span>
+                    </div>
+                    <div class="footer">Thank you. Keep this for your records.</div>
+                  </div>
+                  <script>
+                    window.onload = function() { window.print(); }
+                  </script>
+                </body>
+                </html>
+              `);
+              receiptWindow.document.close();
             };
 
             assignedDataEl.classList.remove('hidden');
