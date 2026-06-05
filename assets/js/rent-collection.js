@@ -4684,3 +4684,162 @@ function getDb() {
 }
 
 
+
+// --- TENANT INTAKE SYSTEM ---
+let intakesList = [];
+
+async function fetchIntakes() {
+  const syncUrl = localStorage.getItem("app_sync_url");
+  const secretKey = localStorage.getItem("app_sync_key");
+  if (!syncUrl || !secretKey) return;
+  
+  try {
+    const response = await fetch(`${syncUrl}?action=get_intakes`, {
+      headers: { "X-Secret-Key": secretKey }
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    intakesList = Array.isArray(data) ? data : [];
+    updateIntakeBadge();
+  } catch(e) {
+    console.error("Failed to fetch intakes", e);
+  }
+}
+
+function updateIntakeBadge() {
+  const badge = document.getElementById("intakeBadge");
+  if (!badge) return;
+  const pending = intakesList.filter(i => i.status === "pending").length;
+  if (pending > 0) {
+    badge.textContent = pending;
+    badge.hidden = false;
+  } else {
+    badge.hidden = true;
+  }
+}
+
+function renderIntakeModal() {
+  const listEl = document.getElementById("intakeList");
+  const emptyEl = document.getElementById("intakeEmpty");
+  const pendingIntakes = intakesList.filter(i => i.status === "pending").sort((a,b) => b.timestamp - a.timestamp);
+  
+  if (pendingIntakes.length === 0) {
+    listEl.innerHTML = "";
+    emptyEl.style.display = "block";
+    return;
+  }
+  
+  emptyEl.style.display = "none";
+  listEl.innerHTML = pendingIntakes.map(req => `
+    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: #f9fafb;">
+      <h4 style="margin: 0 0 4px 0; font-size: 1.1rem; color: #111827;">${escapeHtml(req.name)}</h4>
+      <div style="color: #4b5563; font-size: 0.9rem; margin-bottom: 12px;">
+        <div>Mobile: <strong>${escapeHtml(req.mobile)}</strong></div>
+        <div>Room: <strong>${escapeHtml(req.roomNumber || "-")}</strong></div>
+        ${req.notes ? `<div>Notes: <em>${escapeHtml(req.notes)}</em></div>` : ""}
+        <div style="font-size: 0.8rem; color: #9ca3af; margin-top: 4px;">Applied: ${new Date(req.timestamp).toLocaleString()}</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="button button-accent" style="padding: 6px 12px; font-size: 0.9rem;" onclick="acceptIntake('${req.id}')">Accept & Add</button>
+        <button class="button button-ghost" style="padding: 6px 12px; font-size: 0.9rem; color: #ef4444;" onclick="rejectIntake('${req.id}')">Reject</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function updateIntakeStatus(id, status) {
+  const syncUrl = localStorage.getItem("app_sync_url");
+  const secretKey = localStorage.getItem("app_sync_key");
+  try {
+    await fetch(`${syncUrl}?action=update_intake`, {
+      method: 'POST',
+      headers: { "X-Secret-Key": secretKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status })
+    });
+    // Optimistic update
+    const req = intakesList.find(i => i.id === id);
+    if (req) req.status = status;
+    updateIntakeBadge();
+    renderIntakeModal();
+  } catch(e) {
+    console.error("Failed to update intake", e);
+    showToast("Failed to update status on server.");
+  }
+}
+
+async function acceptIntake(id) {
+  const req = intakesList.find(i => i.id === id);
+  if (!req) return;
+  
+  // Close modal
+  document.getElementById("intakeModal").hidden = true;
+  
+  // Switch to Tenants tab and click Add Tenant
+  document.querySelector('[data-tab="tenants"]').click();
+  setTimeout(() => {
+    document.getElementById("addTenantBtn").click();
+    // Pre-fill form
+    document.getElementById("tenantFullName").value = req.name;
+    document.getElementById("tenantMobileNumber").value = req.mobile;
+    document.getElementById("tenantRoomNumber").value = req.roomNumber || "";
+    document.getElementById("tenantIdNumber").value = req.idNumber || "";
+    if (req.notes) document.getElementById("tenantNotes").value = "Intake Notes: " + req.notes;
+    
+    // Hook into saving so we mark it as approved
+    const btn = document.getElementById("tenantSubmitBtn");
+    const originalClick = btn.onclick;
+    
+    const newSubmitHandler = async (e) => {
+      // Check if this was a successful addition by counting tenants before and after
+      const countBefore = state.tenants.length;
+      // Trigger the real form submission logic programmatically if needed or wait for handleTenantSave
+      // Since it's a form submit, handleTenantSave gets called.
+      setTimeout(async () => {
+         if (state.tenants.length > countBefore) {
+           await updateIntakeStatus(id, "approved");
+           showToast("Tenant added and application approved!");
+         }
+      }, 1000);
+      
+      // Cleanup the event listener hook
+      intakeHookCleanup();
+    };
+    
+    const form = document.getElementById("tenantForm");
+    form.addEventListener("submit", newSubmitHandler);
+    
+    function intakeHookCleanup() {
+      form.removeEventListener("submit", newSubmitHandler);
+    }
+  }, 100);
+}
+
+async function rejectIntake(id) {
+  const confirmReject = await openConfirmDialog({
+    title: "Reject Application",
+    body: "Are you sure you want to reject this tenant application?",
+    confirmText: "Reject",
+    cancelText: "Cancel",
+    tone: "danger"
+  });
+  if (confirmReject) {
+    await updateIntakeStatus(id, "rejected");
+  }
+}
+
+// Attach event listener
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("intakeInboxBtn");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      document.getElementById("intakeModal").hidden = false;
+      renderIntakeModal();
+      fetchIntakes(); // Refresh list on open
+    });
+  }
+  
+  // Fetch periodically
+  setTimeout(fetchIntakes, 2000);
+  setInterval(fetchIntakes, 60000); // Check every minute
+});
+

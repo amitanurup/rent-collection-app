@@ -1,0 +1,109 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const submitSection = document.getElementById('submitSection');
+  const statusSection = document.getElementById('statusSection');
+  const intakeForm = document.getElementById('intakeForm');
+  const statusForm = document.getElementById('statusForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const checkStatusBtn = document.getElementById('checkStatusBtn');
+  const showStatusBtn = document.getElementById('showStatusBtn');
+  const backToApplyBtn = document.getElementById('backToApplyBtn');
+  const statusResult = document.getElementById('statusResult');
+  const statusName = document.getElementById('statusName');
+  const statusBadge = document.getElementById('statusBadge');
+  const toastEl = document.getElementById('toast');
+
+  let syncTimeout;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(() => toastEl.classList.remove('show'), 3000);
+  }
+
+  // The rent-sync.php URL should be constructed relative to this page
+  // Assuming the structure: https://website.com/tenant-intake.html and https://website.com/rent-sync.php
+  const getSyncUrl = () => {
+    // For local dev, hardcode or fallback. In production, it's relative.
+    const url = new URL('rent-sync.php', window.location.href).href;
+    return url;
+  };
+
+  showStatusBtn.addEventListener('click', () => {
+    submitSection.classList.add('hidden');
+    statusSection.classList.remove('hidden');
+    statusResult.classList.add('hidden');
+  });
+
+  backToApplyBtn.addEventListener('click', () => {
+    statusSection.classList.add('hidden');
+    submitSection.classList.remove('hidden');
+  });
+
+  intakeForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    const payload = {
+      name: document.getElementById('fullName').value.trim(),
+      mobile: document.getElementById('mobileNumber').value.trim(),
+      roomNumber: document.getElementById('roomNumber').value.trim(),
+      idNumber: document.getElementById('idNumber').value.trim(),
+      notes: document.getElementById('notes').value.trim()
+    };
+
+    try {
+      const response = await fetch(`${getSyncUrl()}?action=submit_intake`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (data.success) {
+        showToast('Application submitted successfully!');
+        intakeForm.reset();
+        setTimeout(() => showStatusBtn.click(), 1500);
+      } else {
+        showToast(data.error || 'Failed to submit application.');
+      }
+    } catch (err) {
+      showToast('Network error. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Application';
+    }
+  });
+
+  statusForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    checkStatusBtn.disabled = true;
+    checkStatusBtn.textContent = 'Checking...';
+    statusResult.classList.add('hidden');
+
+    const mobile = document.getElementById('statusMobile').value.trim();
+
+    try {
+      const response = await fetch(`${getSyncUrl()}?action=check_intake&mobile=${encodeURIComponent(mobile)}`);
+      const data = await response.json();
+      
+      if (data.found) {
+        statusName.textContent = `Hello, ${data.name}`;
+        statusBadge.textContent = data.status.toUpperCase();
+        
+        statusBadge.className = 'status-badge';
+        if (data.status === 'pending') statusBadge.classList.add('status-pending');
+        else if (data.status === 'approved') statusBadge.classList.add('status-approved');
+        else if (data.status === 'rejected') statusBadge.classList.add('status-rejected');
+        
+        statusResult.classList.remove('hidden');
+      } else {
+        showToast('No application found for this mobile number.');
+      }
+    } catch (err) {
+      showToast('Network error. Please try again.');
+    } finally {
+      checkStatusBtn.disabled = false;
+      checkStatusBtn.textContent = 'Check Status';
+    }
+  });
+});

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Tenant Application Form</title>
+    <meta name="theme-color" content="#fdfdfc" />
+    <link rel="icon" href="assets/img/icon-192.png" type="image/png" />
+    
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="assets/css/tenant-public.css" />
+    <script src="assets/js/tenant-intake.js" defer></script>
+
+    <style>
+      .intake-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .intake-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.04);
+        margin-bottom: 24px;
+      }
+      .intake-title {
+        font-family: 'Fraunces', serif;
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+        color: #111827;
+      }
+      .intake-desc {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+        line-height: 1.5;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #374151;
+        font-size: 0.9rem;
+      }
+      .form-group input, .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      .form-group input:focus, .form-group textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        background: #111827;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .btn:hover {
+        background: #1f2937;
+      }
+      .btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+      }
+      .btn-outline {
+        background: transparent;
+        color: #111827;
+        border: 1px solid #d1d5db;
+        margin-top: 12px;
+      }
+      .btn-outline:hover {
+        background: #f3f4f6;
+      }
+      
+      .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 8px;
+      }
+      .status-pending { background: #fef3c7; color: #92400e; }
+      .status-approved { background: #d1fae5; color: #065f46; }
+      .status-rejected { background: #fee2e2; color: #991b1b; }
+      
+      .hidden { display: none !important; }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f2937;
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        z-index: 1000;
+        transition: opacity 0.3s;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .toast.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="intake-container">
+      
+      <!-- Submit Form Section -->
+      <div id="submitSection" class="intake-card">
+        <h1 class="intake-title">Tenant Application</h1>
+        <p class="intake-desc">Please fill out your details to apply for a room. We will review your application and update the status soon.</p>
+        
+        <form id="intakeForm">
+          <div class="form-group">
+            <label for="fullName">Full Name *</label>
+            <input type="text" id="fullName" required placeholder="Enter your full name" />
+          </div>
+          <div class="form-group">
+            <label for="mobileNumber">Mobile Number *</label>
+            <input type="tel" id="mobileNumber" required placeholder="10-digit mobile number" pattern="[0-9]{10}" />
+          </div>
+          <div class="form-group">
+            <label for="roomNumber">Room Preference / Number</label>
+            <input type="text" id="roomNumber" placeholder="e.g. 101 or 1BHK" />
+          </div>
+          <div class="form-group">
+            <label for="idNumber">Aadhaar / ID Number</label>
+            <input type="text" id="idNumber" placeholder="Optional" />
+          </div>
+          <div class="form-group">
+            <label for="notes">Additional Notes</label>
+            <textarea id="notes" rows="3" placeholder="Any specific requirements or message..."></textarea>
+          </div>
+          <button type="submit" id="submitBtn" class="btn">Submit Application</button>
+          <button type="button" id="showStatusBtn" class="btn btn-outline">Check Application Status</button>
+        </form>
+      </div>
+
+      <!-- Check Status Section -->
+      <div id="statusSection" class="intake-card hidden">
+        <h1 class="intake-title">Check Status</h1>
+        <p class="intake-desc">Enter the mobile number you used to apply.</p>
+        
+        <form id="statusForm">
+          <div class="form-group">
+            <label for="statusMobile">Mobile Number *</label>
+            <input type="tel" id="statusMobile" required placeholder="10-digit mobile number" pattern="[0-9]{10}" />
+          </div>
+          <button type="submit" id="checkStatusBtn" class="btn">Check Status</button>
+          <button type="button" id="backToApplyBtn" class="btn btn-outline">Back to Apply</button>
+        </form>
+
+        <div id="statusResult" class="hidden" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+          <h3 style="margin: 0 0 8px 0; font-size: 1.1rem; color: #111827;" id="statusName"></h3>
+          <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Your application status is:</p>
+          <span id="statusBadge" class="status-badge"></span>
+        </div>
+      </div>
+
+    </div>
+    
+    <div id="toast" class="toast">Message</div>
+  </body>
+</html>

@@ -12,6 +12,7 @@ $SECRET_KEY = "Amit@1234";
 
 // The file where data will be saved
 $DATA_FILE = "rent-database.json";
+$INTAKES_FILE = "rent-intakes.json";
 
 // Allow Cross-Origin Requests from the app
 header("Access-Control-Allow-Origin: *");
@@ -24,6 +25,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
+$action = isset($_GET['action']) ? $_GET['action'] : '';
+
+// ---------------------------------------------------------
+// UNAUTHENTICATED ROUTES (Public Tenant Intake)
+// ---------------------------------------------------------
+
+if ($action === 'submit_intake' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $json_data = file_get_contents('php://input');
+    $decoded = json_decode($json_data, true);
+    if (isset($decoded['mobile'])) {
+        $intakes = file_exists($INTAKES_FILE) ? json_decode(file_get_contents($INTAKES_FILE), true) : [];
+        if (!is_array($intakes)) $intakes = [];
+        
+        $decoded['id'] = uniqid('req_');
+        $decoded['status'] = 'pending';
+        $decoded['timestamp'] = time() * 1000;
+        
+        // Remove old pending requests for same mobile to avoid spam
+        $intakes = array_filter($intakes, function($i) use ($decoded) {
+            return !($i['mobile'] === $decoded['mobile'] && $i['status'] === 'pending');
+        });
+        
+        $intakes[] = $decoded;
+        file_put_contents($INTAKES_FILE, json_encode(array_values($intakes)));
+        
+        echo json_encode(["success" => true, "id" => $decoded['id']]);
+        exit();
+    }
+    http_response_code(400);
+    echo json_encode(["error" => "Invalid intake data"]);
+    exit();
+}
+
+if ($action === 'check_intake' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    $mobile = isset($_GET['mobile']) ? $_GET['mobile'] : '';
+    if ($mobile) {
+        $intakes = file_exists($INTAKES_FILE) ? json_decode(file_get_contents($INTAKES_FILE), true) : [];
+        if (!is_array($intakes)) $intakes = [];
+        
+        $user_intakes = array_filter($intakes, function($i) use ($mobile) {
+            return isset($i['mobile']) && $i['mobile'] === $mobile;
+        });
+        
+        if (count($user_intakes) > 0) {
+            usort($user_intakes, function($a, $b) { return $b['timestamp'] - $a['timestamp']; });
+            $latest = array_values($user_intakes)[0];
+            echo json_encode(["found" => true, "status" => $latest['status'], "name" => $latest['name']]);
+            exit();
+        }
+        echo json_encode(["found" => false]);
+        exit();
+    }
+    http_response_code(400);
+    echo json_encode(["error" => "Missing mobile"]);
+    exit();
+}
+
+// ---------------------------------------------------------
+// AUTHENTICATED ROUTES (Owner Dashboard)
+// ---------------------------------------------------------
 
 // Get the Secret Key from Headers or Query params
 $provided_key = '';
@@ -40,18 +102,40 @@ if ($provided_key !== $SECRET_KEY) {
     exit();
 }
 
-// GET Request: Download Data
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (file_exists($DATA_FILE)) {
-        echo file_get_contents($DATA_FILE);
+// GET Request: Get Intakes
+if ($action === 'get_intakes' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (file_exists($INTAKES_FILE)) {
+        echo file_get_contents($INTAKES_FILE);
     } else {
-        echo json_encode(["_timestamp" => 0, "value" => null]);
+        echo json_encode([]);
     }
     exit();
 }
 
+// POST Request: Update Intake Status
+if ($action === 'update_intake' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $json_data = file_get_contents('php://input');
+    $decoded = json_decode($json_data, true);
+    if (isset($decoded['id']) && isset($decoded['status'])) {
+        $intakes = file_exists($INTAKES_FILE) ? json_decode(file_get_contents($INTAKES_FILE), true) : [];
+        if (!is_array($intakes)) $intakes = [];
+        
+        foreach ($intakes as &$intake) {
+            if ($intake['id'] === $decoded['id']) {
+                $intake['status'] = $decoded['status'];
+            }
+        }
+        file_put_contents($INTAKES_FILE, json_encode($intakes));
+        echo json_encode(["success" => true]);
+        exit();
+    }
+    http_response_code(400);
+    echo json_encode(["error" => "Invalid payload"]);
+    exit();
+}
+
 // POST Request: Shorten URL
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'shorten') {
+if ($action === 'shorten' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $json_data = file_get_contents('php://input');
     $decoded = json_decode($json_data, true);
     if (isset($decoded['url'])) {
@@ -81,8 +165,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     exit();
 }
 
+// GET Request: Download Data
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && empty($action)) {
+    if (file_exists($DATA_FILE)) {
+        echo file_get_contents($DATA_FILE);
+    } else {
+        echo json_encode(["_timestamp" => 0, "value" => null]);
+    }
+    exit();
+}
+
 // POST Request: Upload Data
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($action)) {
     $json_data = file_get_contents('php://input');
     
     // Validate JSON
