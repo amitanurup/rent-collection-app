@@ -2148,7 +2148,7 @@ async function runAction(action, tenantId, monthKey) {
     if (!confirmDelete) {
       return;
     }
-    const pwd = prompt("Please enter the Owner Password to confirm deletion:");
+    const pwd = await openPasswordDialog("Confirm Deletion", "Please enter the Owner Password to proceed.");
     if (pwd !== APP_PASSWORD) {
       showToast("Incorrect password. Deletion cancelled.");
       return;
@@ -2173,7 +2173,7 @@ async function runAction(action, tenantId, monthKey) {
       return;
     }
 
-    const pwd = prompt("Please enter the Owner Password to confirm deletion:");
+    const pwd = await openPasswordDialog("Confirm Deletion", "Please enter the Owner Password to proceed.");
     if (pwd !== APP_PASSWORD) {
       showToast("Incorrect password. Deletion cancelled.");
       return;
@@ -3267,7 +3267,7 @@ async function clearAllData() {
   if (!shouldClear) {
     return;
   }
-  const pwd = prompt("Please enter the Owner Password to confirm deletion:");
+  const pwd = await openPasswordDialog("Confirm Deletion", "Please enter the Owner Password to proceed.");
   if (pwd !== APP_PASSWORD) {
     showToast("Incorrect password. Deletion cancelled.");
     return;
@@ -3353,7 +3353,7 @@ async function deletePaymentRecord(tenant, monthKey) {
     return;
   }
 
-  const pwd = prompt("Please enter the Owner Password to confirm deletion:");
+  const pwd = await openPasswordDialog("Confirm Deletion", "Please enter the Owner Password to proceed.");
   if (pwd !== APP_PASSWORD) {
     showToast("Incorrect password. Deletion cancelled.");
     return;
@@ -4875,3 +4875,36 @@ async function shareIntakeWhatsapp() {
 }
 
 
+
+
+
+function openPasswordDialog(title = "Enter Password", body = "Please enter the Owner Password to confirm.") {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("passwordModal");
+    const input = document.getElementById("passwordModalInput");
+    document.getElementById("passwordModalTitle").textContent = title;
+    document.getElementById("passwordModalBody").textContent = body;
+    input.value = "";
+    ui.passwordResolver = resolve;
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(() => {
+      input.focus();
+    });
+  });
+}
+
+function closePasswordModal(val) {
+  const modal = document.getElementById("passwordModal");
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  if (ui.passwordResolver) {
+    ui.passwordResolver(val);
+    ui.passwordResolver = null;
+  }
+}
+
+function submitPasswordModal() {
+  const input = document.getElementById("passwordModalInput");
+  closePasswordModal(input.value);
+}

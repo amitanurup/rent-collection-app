@@ -587,7 +587,7 @@ img {
 }
 
 .workspace-grid-tenant {
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.92fr);
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.9fr);
 }
 
 .workspace-grid-reminders,
@@ -2342,7 +2342,7 @@ body {
 }
 
 .workspace-grid-tenant {
-  grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.98fr);
+  grid-template-columns: minmax(0, 1.02fr) minmax(380px, 0.98fr);
 }
 
 .workspace-grid-reminders,

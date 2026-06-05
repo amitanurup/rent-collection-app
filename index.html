@@ -12,11 +12,11 @@
     <link rel="manifest" href="rent-collection.webmanifest" />
     <link rel="icon" href="assets/icons/rent-collection-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/icons/rent-collection-icon.svg" />
-    <link rel="stylesheet" href="assets/css/rent-collection.css?v=20260606-v5" />
+    <link rel="stylesheet" href="assets/css/rent-collection.css?v=20260606-v6" />
     <script>
-      window.APP_VERSION = "20260602-lock-flow-5";
+      window.APP_VERSION = "20260602-lock-flow-6";
     </script>
-    <script defer src="assets/js/rent-collection.js?v=20260606-v5"></script>
+    <script defer src="assets/js/rent-collection.js?v=20260606-v6"></script>
   </head>
   <body>
     <style>
@@ -822,6 +822,22 @@
         </div>
       </div>
     </div>
-    <div class="toast" id="appToast" aria-live="polite" aria-atomic="true"></div>
+      <!-- Password Modal -->
+      <div class="app-modal" id="passwordModal" hidden aria-hidden="true" style="z-index: 10000;">
+        <div class="app-modal-backdrop" onclick="closePasswordModal(null)"></div>
+        <div class="app-modal-card" role="dialog" aria-modal="true" aria-labelledby="passwordModalTitle" style="max-width: 320px; text-align: center;">
+          <div class="app-modal-copy">
+            <h3 id="passwordModalTitle" style="margin-top: 0;">Enter Password</h3>
+            <p id="passwordModalBody" style="margin-bottom: 16px;">Please enter the Owner Password to confirm.</p>
+            <input type="password" id="passwordModalInput" placeholder="Password" style="width: 100%; background: rgba(13, 18, 24, 0.7); border: 1px solid rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 8px; color: #fff; text-align: center; font-size: 1.1rem; margin-bottom: 20px;" />
+          </div>
+          <div class="app-modal-actions" style="display: flex; gap: 10px; justify-content: center;">
+            <button class="button button-ghost" type="button" onclick="closePasswordModal(null)">Cancel</button>
+            <button class="button button-accent" type="button" onclick="submitPasswordModal()">Confirm</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="toast" id="appToast" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>
