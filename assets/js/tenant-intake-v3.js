@@ -115,15 +115,20 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('assignedWater').textContent = data.assignedData.water ? `Rs. ${data.assignedData.water}` : "-";
             document.getElementById('assignedAdvance').textContent = data.assignedData.advance ? `Rs. ${data.assignedData.advance}` : "-";
             
-            if (data.assignedData.upiId) {
-              const totalAmount = (parseFloat(data.assignedData.rent || 0) + parseFloat(data.assignedData.advance || 0)).toFixed(2);
-              if (totalAmount > 0) {
-                const upiLink = `upi://pay?pa=${encodeURIComponent(data.assignedData.upiId)}&pn=House%20Rent&am=${totalAmount}&cu=INR&tn=Rent%20Advance`;
-                document.getElementById('upiPayLink').href = upiLink;
-                document.getElementById('upiPaymentSection').classList.remove('hidden');
-              } else {
-                document.getElementById('upiPaymentSection').classList.add('hidden');
+            const upiIdStr = data.assignedData.upiId || "";
+            const totalAmount = (parseFloat(data.assignedData.rent || 0) + parseFloat(data.assignedData.advance || 0)).toFixed(2);
+            if (totalAmount > 0) {
+              const upiLink = `upi://pay?pa=${encodeURIComponent(upiIdStr)}&pn=House%20Rent&am=${totalAmount}&cu=INR&tn=Rent%20Advance`;
+              document.getElementById('upiPayLink').href = upiLink;
+              
+              if (!upiIdStr) {
+                document.getElementById('upiPayLink').onclick = (e) => {
+                  e.preventDefault();
+                  alert("Owner ne abhi tak apna UPI ID set nahi kiya hai.");
+                };
               }
+              
+              document.getElementById('upiPaymentSection').classList.remove('hidden');
             } else {
               document.getElementById('upiPaymentSection').classList.add('hidden');
             }
