@@ -56,11 +56,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     $decoded = json_decode($json_data, true);
     if (isset($decoded['url'])) {
         $longUrl = $decoded['url'];
-        $shortUrl = @file_get_contents("https://tinyurl.com/api-create.php?url=" . urlencode($longUrl));
-        if ($shortUrl) {
-            echo json_encode(["shortUrl" => $shortUrl]);
-            exit();
-        }
+        
+        // Generate a 6-character random ID
+        $shortId = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"), 0, 6);
+        $linksFile = 'rent-links.json';
+        
+        // Read existing links
+        $links = file_exists($linksFile) ? json_decode(file_get_contents($linksFile), true) : [];
+        if (!is_array($links)) $links = [];
+        
+        // Save new link
+        $links[$shortId] = $longUrl;
+        file_put_contents($linksFile, json_encode($links));
+        
+        // Generate the short URL pointing to p.php
+        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]" . dirname($_SERVER['REQUEST_URI']);
+        $shortUrl = $baseUrl . "/p.php?id=" . $shortId;
+        
+        echo json_encode(["shortUrl" => $shortUrl]);
+        exit();
     }
     http_response_code(400);
     echo json_encode(["error" => "Failed to shorten url"]);
